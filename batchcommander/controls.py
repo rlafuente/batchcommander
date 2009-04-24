@@ -41,6 +41,7 @@ class Control(QtGui.QWidget):
         self.height = 36
 
         self.field = field
+        self.active = self.field.active
 
         self.name = self.field.name
 
@@ -60,16 +61,20 @@ class Control(QtGui.QWidget):
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred))
 
         # create the 'active' checkbox
-        self.activebox = QtGui.QCheckBox('', self)
-        self.activebox.setChecked(True)
+        self.activeBox = QtGui.QCheckBox('', self)
+        self.activeBox.setChecked(True)
+        self.connect(self.activeBox, QtCore.SIGNAL('stateChanged(int)'), self.setActive)
 
         # TODO: tooltip
 
     def isActive(self):
-        return self.activebox.isChecked()
+        return self.active
 
     def setValue(self, value):
         pass
+    
+    def setActive(self, state):
+        self.active = self.field.active = bool(state)
 
     def getValue(self, value):
         pass
@@ -87,11 +92,16 @@ class ToggleControl(Control):
         self.connect(self.checkBox, QtCore.SIGNAL('stateChanged(int)'), self.setValue)
         self.hbox.addWidget(self.checkBox)
         self.hbox.addStretch()
-        self.hbox.addWidget(self.activebox)
+        self.hbox.addWidget(self.activeBox)
 
     def setValue(self, value):
         self.value = self.field.value = bool(value)
         self.emit(QtCore.SIGNAL('controlChanged()'))
+    
+    def setActive(self, state):
+        self.active = self.field.active = bool(state)
+        self.label.setEnabled(self.active)
+        self.checkBox.setEnabled(self.active)
 
     def getValue(self):
         return self.value
@@ -111,7 +121,7 @@ class ChoiceControl(Control):
 
         self.hbox.addWidget(self.choiceBox)
         self.hbox.addStretch()
-        self.hbox.addWidget(self.activebox)
+        self.hbox.addWidget(self.activeBox)
 
     def setValue(self, index):
         self.value = self.field.value = self.choiceBox.itemText(index)
@@ -124,6 +134,11 @@ class ChoiceControl(Control):
     def updateValue(self):
         # updates stored values according to user interaction
         self.value = self.field.value = self.choiceBox.currentText()
+        
+    def setActive(self, state):
+        self.active = self.field.active = bool(state)
+        self.label.setEnabled(self.active)
+        self.choiceBox.setEnabled(self.active)
 
 
 class NumberControl(Control):
@@ -176,7 +191,7 @@ class NumberControl(Control):
 
         self.hbox.addWidget(self.slider)
         self.hbox.addWidget(self.numberbox)
-        self.hbox.addWidget(self.activebox)
+        self.hbox.addWidget(self.activeBox)
 
         if self.field.unit:
             self.unitComboBox = QtGui.QComboBox(self)
@@ -205,6 +220,14 @@ class NumberControl(Control):
 
     def getValue(self):
         return self.value
+    
+    def setActive(self, state):
+        self.active = self.field.active = bool(state)
+        self.label.setEnabled(self.active)
+        self.numberbox.setEnabled(self.active)
+        if self.field.unit:
+            self.unitComboBox.setEnabled(self.active)
+        self.slider.setEnabled(self.active)
 
 class ColorChooserControl(Control):
     def __init__(self, *args, **kwargs):
@@ -224,7 +247,7 @@ class ColorChooserControl(Control):
         self.hbox.addWidget(self.colorbtn)
         self.hbox.addWidget(self.textbox)
         # self.hbox.addStretch(10)
-        self.hbox.addWidget(self.activebox)
+        self.hbox.addWidget(self.activeBox)
 
         # set the control to the initial colour
         self.updateColor()
@@ -256,6 +279,12 @@ class ColorChooserControl(Control):
 
     def getValue(self):
         return self.field.value
+    
+    def setActive(self, state):
+        self.active = self.field.active = bool(state)
+        self.label.setEnabled(self.active)
+        self.textbox.setEnabled(self.active)
+        self.colorbtn.setEnabled(self.active)
 
 def createControlFromField(field):
     control = None

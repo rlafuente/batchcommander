@@ -58,12 +58,14 @@ class Section:
     def styleOutput(self, file=sys.stdout):
         file.write('%% --------------  %s  --------------\n' % self.name)
         for field in self.fields:
-            file.write(field.styleOutput())
+            if field.active:
+                file.write(field.styleOutput())
 
 class Field:
-    def __init__(self, name, propdict):
+    def __init__(self, name, propdict, active=True):
         self.name = name
         self.longname = name
+        self.active = active
 
         if propdict.has_key('longname'):
             self.longname = propdict['longname']
