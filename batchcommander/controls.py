@@ -149,13 +149,11 @@ class NumberControl(Control):
 
         if floating:
             self.numberbox = QtGui.QDoubleSpinBox(self)
-            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
             if not self.decimals:
                 self.decimals = 1
             self.numberbox.setDecimals(self.decimals)
         else:
             self.numberbox = QtGui.QSpinBox(self)
-            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
         self.numberbox.setMinimum(self.min)
         self.numberbox.setMaximum(self.max)
         self.numberbox.setSingleStep(self.increment)
@@ -163,10 +161,18 @@ class NumberControl(Control):
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.slider.setRange(self.min * pow(10,self.decimals), self.max * pow(10,self.decimals))
         self.slider.setSingleStep(self.increment)
-        self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'), self.setValueFromSlider)
 
-        # set widgets to initial value
+        # set widgets to initial value before connecting
         self.setValue(self.value)
+        
+        # and now connect the signals
+        #self.connect(self.slider, QtCore.SIGNAL('activated()'), self.updateNumberboxFromSlider)
+        self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'), self.setValueFromSlider)
+        self.connect(self.slider, QtCore.SIGNAL('valueChanged(int)'), self.updateNumberboxFromSlider)
+        if floating:
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
+        else:
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
 
         self.hbox.addWidget(self.slider)
         self.hbox.addWidget(self.numberbox)
@@ -184,16 +190,18 @@ class NumberControl(Control):
         self.unit = self.field.unit = self.unitComboBox.itemText(index)
 
     def setValue(self, value):
-        # FIXME: This appears to be called twice, not good
         self.value = self.field.value = value
         self.slider.setValue(value * pow(10, self.decimals))
         self.numberbox.setValue(value)
         self.emit(QtCore.SIGNAL('controlChanged()'))
 
     def setValueFromSlider(self):
-        value = self.slider.value()
-        v = value / pow(10, self.decimals)
+        v = self.slider.value() / pow(10, self.decimals)
         self.setValue(v)
+        
+    def updateNumberboxFromSlider(self, value):
+        v = value / pow(10, self.decimals)
+        self.numberbox.setValue(v)
 
     def getValue(self):
         return self.value

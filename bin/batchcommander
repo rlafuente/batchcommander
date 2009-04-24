@@ -29,9 +29,9 @@
 
 import sys
 from PyQt4 import QtGui, QtCore
-from BatchCommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, createControlFromField
-from BatchCommander.parser import *
-from BatchCommander.defaults import *
+from batchcommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, createControlFromField
+from batchcommander.parser import *
+from batchcommander.defaults import *
 
 DATAFILE = sys.argv[1]
 INPUTFILE = '/home/rlafuente/work/bc/texfiles/sarovar.tex'
@@ -39,6 +39,8 @@ OUTPUTFILE = '/home/rlafuente/work/bc/texfiles/river_valley.sty'
 
 IMMEDIATE = True
 
+# TODO: rid ourselves of globals
+sections = None
 
 def outputStyFile():
     global sections
@@ -54,6 +56,7 @@ def outputStyFile():
     os.system('pdflatex %s output.pdf' % INPUTFILE)
 
 def main():
+    global sections
     app = QtGui.QApplication(sys.argv)
     datadict = parse_datafile(DATAFILE)
     toolbox = QtGui.QToolBox()
