@@ -1,0 +1,40 @@
+Geometry:
+    - orientation:
+        longname: Orientation
+        type: choice
+        value: portrait
+        decimals: 0
+        choices: landscape, portrait
+    - paper:
+        longname: Paper
+        type: choice
+        value: a4paper
+        decimals: 0
+        choices: a0paper,a1paper,a2paper,a3paper,a4paper,a5paper,a6paper,b0paper,b1paper,b2paper,b3paper,b4paper,b5paper,b6paper,letterpaper,executivepaper,legalpaper,screen
+    - textheight:
+        longname: Height of text
+        type: number
+        value: 20
+        min: 1
+        max: 30
+        increment: 1
+        decimals: 1
+    - textwidth:
+        longname: Width of text
+        type: number
+        value: 10
+        min: 1
+        max: 20
+        increment: 1
+        decimals: 1
+
+Page:
+    - twocolumn:
+        longname: Double column
+        type: toggle
+        value: off
+    - showframe:
+        longname: Show frame
+        type: toggle
+        value: off
+
