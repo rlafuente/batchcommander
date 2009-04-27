@@ -34,11 +34,11 @@ from defaults import *
 
 
 class Control(QtGui.QWidget):
-    def __init__(self, field, parent=None, width=250):
+    def __init__(self, field, parent=None, width=250, height=36):
         QtGui.QWidget.__init__(self, parent)
 
         self.width = width
-        self.height = 36
+        self.height = height
 
         self.field = field
         self.active = self.field.active
@@ -294,16 +294,16 @@ class ColorChooserControl(Control):
         self.textbox.setEnabled(self.active)
         self.colorbtn.setEnabled(self.active)
 
-def createControlFromField(field):
+def createControlFromField(field, parent=None, w=250, h=36):
     control = None
     if field.type == TOGGLE:
-        control = ToggleControl(field)
+        control = ToggleControl(field, parent, width=w, height=h)
     elif field.type == COLOR:
-        control = ColorChooserControl(field)
+        control = ColorChooserControl(field, parent, width=w, height=h)
     elif field.type == NUMBER:
-        control = NumberControl(field)
+        control = NumberControl(field, parent, width=w, height=h)
     elif field.type == CHOICE:
-        control = ChoiceControl(field)
+        control = ChoiceControl(field, parent, width=w, height=h)
     else:
         print 'Wrong field type: '
         print field.type

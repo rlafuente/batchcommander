@@ -81,7 +81,6 @@ class Field:
             for choice in propdict['choices'].split(','):
                 self.choices.append(choice.strip())
         elif self.type == NUMBER:
-
             self.min = propdict['min']
             self.max = propdict['max']
             self.increment = propdict['increment']
@@ -90,6 +89,8 @@ class Field:
             if propdict.has_key('unit'):
                 self.unit = propdict['unit']
         self.value = propdict['value']
+        if propdict.has_key('active'):
+            self.active = propdict['active']
 
     def dump(self, file=sys.stdout):
         # dump yaml representation

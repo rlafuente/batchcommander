@@ -37,6 +37,11 @@ DATAFILE = sys.argv[1]
 INPUTFILE = '/home/rlafuente/work/bc/texfiles/sarovar.tex'
 OUTPUTFILE = '/home/rlafuente/work/bc/texfiles/river_valley.sty'
 
+MAINBOXWIDTH = 370
+MAINBOXHEIGHT = 200
+
+FIELDHEIGHT = 36
+FIELDWIDTH = 370
 IMMEDIATE = True
 
 # TODO: rid ourselves of globals
@@ -56,30 +61,48 @@ def outputStyFile():
     os.system('pdflatex %s output.pdf' % INPUTFILE)
 
 def main():
-    global sections
+    global sections, FIELDWIDTH, FIELDHEIGHT, MAINBOXWIDTH, MAINBOXHEIGHT
     app = QtGui.QApplication(sys.argv)
+
+    groupBox = QtGui.QGroupBox()
+    runButton = QtGui.QPushButton('Run', groupBox)
+    groupBox.connect(runButton, QtCore.SIGNAL('clicked()'), outputStyFile)
+    groupBox.setGeometry(0,0,MAINBOXWIDTH+25,MAINBOXHEIGHT)
+    groupBox.show()
+
     datadict = parse_datafile(DATAFILE)
     toolbox = QtGui.QToolBox()
     sections = generate_fields(datadict)
 
     for section in sections:
-        container = QtGui.QWidget()
-        box = QtGui.QVBoxLayout(container)
+        # count fields
+        numberOfFields = len(section.fields)
+        
+        # make frame        
+        container = QtGui.QFrame()
+        container.setGeometry(0,0,FIELDWIDTH, FIELDHEIGHT*numberOfFields)
+        
+        fieldCount = 0
+        
         for field in section.fields:
-            control = createControlFromField(field)
+            control = createControlFromField(field, parent=container, w=FIELDWIDTH, h=FIELDHEIGHT)
+            # place the control in absolute coords
+            control.setGeometry(0,fieldCount*FIELDHEIGHT, FIELDWIDTH, FIELDHEIGHT)
             if IMMEDIATE:
                 control.connect(control, QtCore.SIGNAL('controlChanged()'), outputStyFile)
-            box.addWidget(control)
+            
+            fieldCount += 1
 
-        toolbox.addItem(container, section.name)
+        scrollbox = QtGui.QScrollArea()
+        scrollbox.setWidget(container)
+        # make scrollbox flat
+        scrollbox.setFrameStyle(container.NoFrame)
+        toolbox.addItem(scrollbox, section.name)
 
     toolbox.show()
-    toolbox.setGeometry(0,0,400,400)
+    toolbox.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
 
-    groupBox = QtGui.QGroupBox()
-    runButton = QtGui.QPushButton('Run', groupBox)
-    groupBox.connect(runButton, QtCore.SIGNAL('clicked()'), outputStyFile)
-    groupBox.show()
+
 
     sys.exit(app.exec_())
     
