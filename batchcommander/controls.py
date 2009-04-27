@@ -154,15 +154,15 @@ class NumberControl(Control):
         if not self.decimals:
             self.decimals = 0
 
-        floating = False
+        self.floating = False
         if type(self.value) == float or \
                 type(self.min) == float or \
                 type(self.max) == float or \
                 type(self.increment) == float or \
                 self.decimals:
-            floating = True
+            self.floating = True
 
-        if floating:
+        if self.floating:
             self.numberbox = QtGui.QDoubleSpinBox(self)
             if not self.decimals:
                 self.decimals = 1
@@ -184,7 +184,7 @@ class NumberControl(Control):
         #self.connect(self.slider, QtCore.SIGNAL('activated()'), self.updateNumberboxFromSlider)
         self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'), self.setValueFromSlider)
         self.connect(self.slider, QtCore.SIGNAL('valueChanged(int)'), self.updateNumberboxFromSlider)
-        if floating:
+        if self.floating:
             self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
         else:
             self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
@@ -216,7 +216,15 @@ class NumberControl(Control):
         
     def updateNumberboxFromSlider(self, value):
         v = value / pow(10, self.decimals)
+        # quick hack to prevent numberbox to sending the valueChanged
+        # signal
+        self.disconnect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
+        self.disconnect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
         self.numberbox.setValue(v)
+        if self.floating:
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
+        else:
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
 
     def getValue(self):
         return self.value
