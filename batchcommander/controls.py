@@ -64,7 +64,8 @@ class Control(QtGui.QWidget):
         self.activeBox = QtGui.QCheckBox('', self)
         self.activeBox.setChecked(True)
         self.connect(self.activeBox, QtCore.SIGNAL('stateChanged(int)'), self.setActive)
-
+        
+       
         # TODO: tooltip
 
     def isActive(self):
@@ -94,6 +95,10 @@ class ToggleControl(Control):
         self.hbox.addStretch()
         self.hbox.addWidget(self.activeBox)
 
+        if not self.active:
+            self.setActive(self.active)
+            self.activeBox.setChecked(self.active)
+
     def setValue(self, value):
         self.value = self.field.value = bool(value)
         self.emit(QtCore.SIGNAL('controlChanged()'))
@@ -122,6 +127,10 @@ class ChoiceControl(Control):
         self.hbox.addWidget(self.choiceBox)
         self.hbox.addStretch()
         self.hbox.addWidget(self.activeBox)
+        
+        if not self.active:
+            self.setActive(self.active)
+            self.activeBox.setChecked(self.active)
 
     def setValue(self, index):
         self.value = self.field.value = self.choiceBox.itemText(index)
@@ -201,6 +210,10 @@ class NumberControl(Control):
             self.unitComboBox.connect(self.unitComboBox, QtCore.SIGNAL('activated(int)'), self.setUnit)
             self.hbox.insertWidget(2, self.unitComboBox)
 
+        if not self.active:
+            self.setActive(self.active)
+            self.activeBox.setChecked(self.active)
+
     def setUnit(self, index):
         self.unit = self.field.unit = self.unitComboBox.itemText(index)
 
@@ -259,6 +272,10 @@ class ColorChooserControl(Control):
 
         # set the control to the initial colour
         self.updateColor()
+        
+        if not self.active:
+            self.setActive(self.active)
+            self.activeBox.setChecked(self.active)
 
     def updateColor(self):
         self.colorbtn.setStyleSheet(
