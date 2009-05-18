@@ -34,8 +34,8 @@ from batchcommander.parser import *
 from batchcommander.defaults import *
 
 DATAFILE = sys.argv[1]
-INPUTFILE = '/home/rlafuente/work/bc/texfiles/sarovar.tex'
-OUTPUTFILE = '/home/rlafuente/work/bc/texfiles/river_valley.sty'
+INPUTFILE = './sarovar.tex'
+OUTPUTFILE = './river_valley.sty'
 
 MAINBOXWIDTH = 370
 MAINBOXHEIGHT = 200
