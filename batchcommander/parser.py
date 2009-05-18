@@ -60,6 +60,11 @@ class Section:
         for field in self.fields:
             if field.active:
                 file.write(field.styleOutput())
+                
+    def pyOutput(self, file=sys.stdout):
+        for field in self.fields:
+            if field.active:
+                file.write(field.pyOutput())
 
 class Field:
     def __init__(self, name, propdict, active=True):
@@ -91,6 +96,10 @@ class Field:
         self.value = propdict['value']
         if propdict.has_key('active'):
             self.active = propdict['active']
+        self.always_active = False
+        if propdict.has_key('always_active'):
+            self.always_active = propdict['always_active']
+
 
     def dump(self, file=sys.stdout):
         # dump yaml representation
@@ -125,6 +134,15 @@ class Field:
         if self.unit:
             cmd += self.unit
         cmd += '\n'
+        return cmd
+        
+    def pyOutput(self):
+        ''' Output a Python variable command '''
+        if self.type == 'color':
+            value = "'" + str(self.value) + "'"
+        else:
+            value = str(self.value)
+        cmd = self.name + ' = ' + value + '\n'
         return cmd
 
 def parse_datafile(datafilename):

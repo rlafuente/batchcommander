@@ -65,7 +65,10 @@ class Control(QtGui.QWidget):
         self.activeBox.setChecked(True)
         self.connect(self.activeBox, QtCore.SIGNAL('stateChanged(int)'), self.setActive)
         
-       
+        if self.field.always_active:
+            self.activeBox.setVisible(False)
+            
+        # self.setActive(self.active)
         # TODO: tooltip
 
     def isActive(self):
@@ -275,7 +278,6 @@ class ColorChooserControl(Control):
         
         if not self.active:
             self.setActive(self.active)
-            self.activeBox.setChecked(self.active)
 
     def updateColor(self):
         self.colorbtn.setStyleSheet(
@@ -307,6 +309,7 @@ class ColorChooserControl(Control):
     
     def setActive(self, state):
         self.active = self.field.active = bool(state)
+        self.activeBox.setChecked(self.active)
         self.label.setEnabled(self.active)
         self.textbox.setEnabled(self.active)
         self.colorbtn.setEnabled(self.active)
