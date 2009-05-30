@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# run.py is copyright (C) 2009 by Ricardo Lafuente
+# This file is copyright (C) 2009 by Ricardo Lafuente
 #
 #   Redistribution and use in source and binary forms, with or without
 #   modification, are permitted provided that the following conditions are met:
@@ -27,84 +27,109 @@
 #   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''Launch the Batch Commander GUI utility'''
 
-import sys
+import sys, os
 from PyQt4 import QtGui, QtCore
 from batchcommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, createControlFromField
-from batchcommander.parser import *
-from batchcommander.defaults import *
+from batchcommander.parser import Section, Field, parse_datafile, generate_fields
+from batchcommander.defaults import UNITS, TOGGLE, COLOR, NUMBER, CHOICE
 
-DATAFILE = sys.argv[1]
-INPUTFILE = './sarovar.tex'
-OUTPUTFILE = './river_valley.sty'
+DEFAULT_INPUTFILE = './sarovar.tex'
+DEFAULT_OUTPUTFILE = './river_valley.sty'
+DEFAULT_PDFOUTPUTFILE = './output.pdf'
 
 MAINBOXWIDTH = 370
 MAINBOXHEIGHT = 200
-
 FIELDHEIGHT = 36
 FIELDWIDTH = 370
-IMMEDIATE = True
 
-# TODO: rid ourselves of globals
-sections = None
-
-def outputStyFile():
-    global sections
-
-    file = open(OUTPUTFILE, 'w')
-
-    file.write('\AtBeginDocument{\n')
-    for section in sections:
-        section.styleOutput(file)
-    file.write('                }\n')
-    file.close()
-    import os
-    os.system('pdflatex %s output.pdf' % INPUTFILE)
-
-def main():
-    global sections, FIELDWIDTH, FIELDHEIGHT, MAINBOXWIDTH, MAINBOXHEIGHT
-    app = QtGui.QApplication(sys.argv)
-
-    groupBox = QtGui.QGroupBox()
-    runButton = QtGui.QPushButton('Run', groupBox)
-    groupBox.connect(runButton, QtCore.SIGNAL('clicked()'), outputStyFile)
-    groupBox.setGeometry(0,0,MAINBOXWIDTH+25,MAINBOXHEIGHT)
-    groupBox.show()
-
-    datadict = parse_datafile(DATAFILE)
-    toolbox = QtGui.QToolBox()
-    sections = generate_fields(datadict)
-
-    for section in sections:
-        # count fields
-        numberOfFields = len(section.fields)
+class BatchCommander:
+    '''Launch the Batch Commander UI.'''
+    def __init__(self, datafile, 
+                 inputfile=DEFAULT_INPUTFILE, 
+                 outputfile=DEFAULT_OUTPUTFILE, 
+                 pdfoutputfile=DEFAULT_PDFOUTPUTFILE):
+        self.datafile = datafile
+        self.inputfile = inputfile
+        self.outputfile = outputfile
+        self.pdfoutputfile = pdfoutputfile
+        # TODO: adapt this to str.format() syntax when migrating to py2.6
+        self.command = 'pdflatex %(tex_file)s %(pdf_file)s'
+        self.sections = None
+        self.immediate = True
         
-        # make frame        
-        container = QtGui.QFrame()
-        container.setGeometry(0,0,FIELDWIDTH, FIELDHEIGHT*numberOfFields)
+        self.app = QtGui.QApplication(sys.argv)
+        self.showMainWindow()
+        self.showControlsWindow()
         
-        fieldCount = 0
+    def showMainWindow(self):
+        '''Create and display the QT interface.'''
+        self.tab_window = QtGui.QTabWidget()
         
-        for field in section.fields:
-            control = createControlFromField(field, parent=container, w=FIELDWIDTH, h=FIELDHEIGHT)
-            # place the control in absolute coords
-            control.setGeometry(0,fieldCount*FIELDHEIGHT, FIELDWIDTH, FIELDHEIGHT)
-            if IMMEDIATE:
-                control.connect(control, QtCore.SIGNAL('controlChanged()'), outputStyFile)
+        main_frame = QtGui.QFrame()
+        run_button = QtGui.QPushButton('Run', main_frame)
+        main_frame.connect(run_button, QtCore.SIGNAL('clicked()'), self.outputStyFile)
+        self.tab_window.addTab(main_frame, 'Main')
+        
+        data_frame = QtGui.QFrame()
+        self.tab_window.addTab(data_frame, 'Data files')
+        
+        self.tab_window.setGeometry(0,0,MAINBOXWIDTH,MAINBOXHEIGHT)
+        self.tab_window.show()
+
+    def showControlsWindow(self):
+        datadict = parse_datafile(self.datafile)
+        self.toolbox = QtGui.QToolBox()
+        self.sections = generate_fields(datadict)
+
+        for section in self.sections:
+            # count fields
+            numberOfFields = len(section.fields)
             
-            fieldCount += 1
+            # make frame        
+            container = QtGui.QFrame()
+            container.setGeometry(0,0,FIELDWIDTH, FIELDHEIGHT*numberOfFields)
+            
+            fieldCount = 0
+            
+            for field in section.fields:
+                control = createControlFromField(field, parent=container, w=FIELDWIDTH, h=FIELDHEIGHT)
+                # place the control in absolute coords
+                control.setGeometry(0,fieldCount*FIELDHEIGHT, FIELDWIDTH, FIELDHEIGHT)
+                if self.immediate:
+                    # immediate mode = tweaking a control triggers the run procedure
+                    control.connect(control, QtCore.SIGNAL('controlChanged()'), self.outputStyFile)
+                
+                fieldCount += 1
 
-        scrollbox = QtGui.QScrollArea()
-        scrollbox.setWidget(container)
-        # make scrollbox flat
-        scrollbox.setFrameStyle(container.NoFrame)
-        toolbox.addItem(scrollbox, section.name)
+            self.scrollbox = QtGui.QScrollArea()
+            self.scrollbox.setWidget(container)
+            # make scrollbox flat
+            self.scrollbox.setFrameStyle(container.NoFrame)
+            self.toolbox.addItem(self.scrollbox, section.name)
 
-    toolbox.show()
-    toolbox.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
+        self.toolbox.show()
+        self.toolbox.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
 
+        sys.exit(self.app.exec_())
 
+    def outputStyFile(self):
+        file = open(self.outputfile, 'w')
+        # begindoc string
+        file.write('\AtBeginDocument{\n')
+        # write each field's value
+        for section in self.sections:
+            section.styleOutput(file)
+        file.write('                }\n')
+        file.close()
+        os.system(self.command % {'tex_file': self.inputfile, 
+                                  'pdf_file': self.pdfoutputfile})
+                                  
+    def setInputFile(self, infile):
+        self.inputfile = infile
+        self.directory = os.path.dirname(infile)
+        filename = os.path.basename(infile)
+        # track where the log file generated by pdflatex will be
+        self.logfilename = self.directory + os.path.splitext(filename)[0] + '.log'
 
-    sys.exit(app.exec_())
-    
 if __name__ == '__main__':
-    main()
+    bc = BatchCommander(datafile=sys.argv[1])
