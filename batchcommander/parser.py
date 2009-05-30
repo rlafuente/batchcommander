@@ -32,16 +32,17 @@ import sys
 from defaults import *
 
 class Section:
-    # this class represents a section which contains one or more
-    # Field instances
+    '''A group of Field instances.'''
     def __init__(self, name):
         self.name = name
         self.fields = []
 
     def add(self, field):
+        '''Add a field to this section.'''
         self.fields.append(field)
 
     def findFieldByName(self, name):
+        '''Returns the field instance whose name matches the input string.'''
         result = None
         for field in self.fields:
             if field.name == name:
@@ -50,23 +51,31 @@ class Section:
         return result
 
     def dump(self, file=sys.stdout):
+        '''Writes a YAML representation of all the fields in this section 
+        into a file.'''
         file.write('%s:\n' % self.name)
         for field in self.fields:
             field.dump(file)
             file.write('\n')
 
     def styleOutput(self, file=sys.stdout):
+        '''Returns strings representing TeX style file commands for all fields
+        in this section.'''
         file.write('%% --------------  %s  --------------\n' % self.name)
         for field in self.fields:
             if field.active:
                 file.write(field.styleOutput())
                 
     def pyOutput(self, file=sys.stdout):
+        '''Returns strings representing Python variable declarations for all 
+        fields in this section.'''
         for field in self.fields:
             if field.active:
                 file.write(field.pyOutput())
 
 class Field:
+    '''Represents a named entity with a variable value, along with
+    other properties.'''
     def __init__(self, name, propdict, active=True):
         self.name = name
         self.longname = name
@@ -100,9 +109,10 @@ class Field:
         if propdict.has_key('always_active'):
             self.always_active = propdict['always_active']
 
-
     def dump(self, file=sys.stdout):
-        # dump yaml representation
+        ''' Write a YAML representation of the Field data into a file.
+        Useful for re-generating .data files.'''
+        # TODO: Rewrite this using str.format()
         file.writelines(['    - %s:\n' % self.name,
                         '        longname: %s\n' % self.longname,
                         '        type: %s\n' % self.type,
@@ -122,7 +132,8 @@ class Field:
                 file.write('        unit: %s\n' % self.unit)
 
     def styleOutput(self):
-        ''' Output a TeX style file command '''
+        '''Returns a string representing a TeX style file command.'''
+        # TODO: Rewrite this using str.format()
         value = self.value
         cmd = ' ' * 18
         cmd += '\\'
@@ -137,7 +148,8 @@ class Field:
         return cmd
         
     def pyOutput(self):
-        ''' Output a Python variable command '''
+        # TODO: Rewrite this using str.format()
+        '''Returns a string representing a Python variable declaration.'''
         if self.type == 'color':
             value = "'" + str(self.value) + "'"
         else:
@@ -146,13 +158,14 @@ class Field:
         return cmd
 
 def parse_datafile(datafilename):
-    # reads a YAML-formatted datafile and returns a dictionary
+    '''Reads a YAML-formatted datafile and returns a dictionary'''
     datafile = open(datafilename, 'r')
     datadict = yaml.load(datafile)
     return datadict
 
 def generate_fields(datadict):
-    # Accepts a datadict and returns a list of Section instances
+    '''Accepts a datadict and returns a list of Section instances.
+    Should be fed the output of the parse_datafile function.'''
     section_list = []
     for section in datadict:
         s = Section(section)
@@ -173,15 +186,9 @@ def dumpSectionList(sectionList, file=sys.stdout):
         section.dump(file)
 
 if __name__ == '__main__':
-    # read file specified in stdin and print structure to stdout
+    '''Read the file specified in stdin and print structure to stdout'''
     datafilename = sys.argv[1]
     datadict = parse_datafile(datafilename)
     sectionList = generate_fields(datadict)
     dumpSectionList(sectionList)
 
-    '''
-    for section in generate_fields(datadict):
-        print section.name
-        for field in section.fields:
-            field.dump()
-    '''
