@@ -109,8 +109,8 @@ class ToggleControl(Control):
     
     def set_active(self, state):
         self.active = self.field.active = bool(state)
-        self.label.set_enabled(self.active)
-        self.checkbox.set_enabled(self.active)
+        self.label.setEnabled(self.active)
+        self.checkbox.setEnabled(self.active)
 
     def get_value(self):
         return self.value
@@ -149,8 +149,8 @@ class ChoiceControl(Control):
         
     def set_active(self, state):
         self.active = self.field.active = bool(state)
-        self.label.set_enabled(self.active)
-        self.choicebox.set_enabled(self.active)
+        self.label.setEnabled(self.active)
+        self.choicebox.setEnabled(self.active)
 
 
 class NumberControl(Control):
@@ -237,8 +237,8 @@ class NumberControl(Control):
 
     def set_value(self, value):
         self.value = self.field.value = value
-        self.slider.set_value(value * pow(10, self.decimals))
-        self.numberbox.set_value(value)
+        self.slider.setValue(value * pow(10, self.decimals))
+        self.numberbox.setValue(value)
         self.emit(QtCore.SIGNAL('controlChanged()'))
 
     def set_value_from_slider(self):
@@ -255,7 +255,7 @@ class NumberControl(Control):
         self.disconnect(self.numberbox, 
                         QtCore.SIGNAL('valueChanged(int)'), 
                         self.set_value)
-        self.numberbox.set_value(value)
+        self.numberbox.setValue(value)
         if self.floating:
             self.connect(self.numberbox, 
                          QtCore.SIGNAL('valueChanged(double)'), 
@@ -269,11 +269,11 @@ class NumberControl(Control):
     
     def set_active(self, state):
         self.active = self.field.active = bool(state)
-        self.label.set_enabled(self.active)
-        self.numberbox.set_enabled(self.active)
+        self.label.setEnabled(self.active)
+        self.numberbox.setEnabled(self.active)
         if self.field.unit:
-            self.unit_combobox.set_enabled(self.active)
-        self.slider.set_enabled(self.active)
+            self.unit_combobox.setEnabled(self.active)
+        self.slider.setEnabled(self.active)
 
 class ColorChooserControl(Control):
     '''A color chooser control creates a text box where color values can be
@@ -343,9 +343,9 @@ class ColorChooserControl(Control):
     def set_active(self, state):
         self.active = self.field.active = bool(state)
         self.activebox.setChecked(self.active)
-        self.label.set_enabled(self.active)
-        self.textbox.set_enabled(self.active)
-        self.colorbutton.set_enabled(self.active)
+        self.label.setEnabled(self.active)
+        self.textbox.setEnabled(self.active)
+        self.colorbutton.setEnabled(self.active)
 
 def create_control_from_field(field, parent=None, width=250, height=36):
     '''Given a Field instance, an appropriate Control instance is returned.'''
