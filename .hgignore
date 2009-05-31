@@ -1,12 +1,12 @@
 syntax: glob
 
-# ignore .orig files (leftovers from merges)
+# leftovers from merges
 *.orig
-
-# ignore build and dist output
+# log files
+*.log
+# build and dist output
 build/*
 dist/*
-
 # python bytecode files
 *.pyc
 *.pyo

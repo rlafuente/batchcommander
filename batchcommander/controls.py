@@ -28,12 +28,12 @@
 '''GUI widgets for Batch Commander'''
 
 from __future__ import division
-import sys
 from PyQt4 import QtGui, QtCore
-from defaults import *
+from defaults import UNITS, COLOR, TOGGLE, NUMBER, CHOICE
 
 
 class Control(QtGui.QWidget):
+    '''A Control is a GUI representation of a Field instance.'''
     def __init__(self, field, parent=None, width=250, height=36):
         QtGui.QWidget.__init__(self, parent)
 
@@ -50,110 +50,115 @@ class Control(QtGui.QWidget):
             self.longname = self.field.longname
 
         self.hboxwidget = QtGui.QWidget(self)
-        self.hboxwidget.setGeometry(QtCore.QRect(150,0,225,self.height))
+        self.hboxwidget.setGeometry(QtCore.QRect(150, 0, 225, self.height))
         self.hbox = QtGui.QHBoxLayout(self.hboxwidget)
 
         self.label = QtGui.QLabel(self.longname, self)
-        self.label.setGeometry(QtCore.QRect(0,0,self.width,self.height))
-        self.label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-        self.label.setGeometry(0,0,150,self.height)
+        self.label.setGeometry(QtCore.QRect(0, 0, self.width, self.height))
+        self.label.setAlignment(QtCore.Qt.AlignRight|
+                                QtCore.Qt.AlignVCenter)
+        self.label.setGeometry(0, 0, 150, self.height)
 
-        self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred))
-
+        self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, 
+                                             QtGui.QSizePolicy.Preferred))
         # create the 'active' checkbox
-        self.activeBox = QtGui.QCheckBox('', self)
-        self.activeBox.setChecked(True)
-        self.connect(self.activeBox, QtCore.SIGNAL('stateChanged(int)'), self.setActive)
-        
+        self.activebox = QtGui.QCheckBox('', self)
+        self.activebox.setChecked(True)
+        self.connect(self.activebox, 
+                     QtCore.SIGNAL('stateChanged(int)'), 
+                     self.set_active)       
         if self.field.always_active:
-            self.activeBox.setVisible(False)
-            
-        # self.setActive(self.active)
+            self.activebox.setVisible(False)
+        # self.set_active(self.active)
         # TODO: tooltip
 
-    def isActive(self):
+    def is_active(self):
         return self.active
-
-    def setValue(self, value):
-        pass
-    
-    def setActive(self, state):
+    def set_active(self, state):
         self.active = self.field.active = bool(state)
 
-    def getValue(self, value):
+    def set_value(self, value):
+        pass    
+    def get_value(self):
         pass
-
 
 
 class ToggleControl(Control):
+    '''A Toggle control contains a checkbox, and represents a TOGGLE field.'''
     def __init__(self, *args, **kwargs):
         Control.__init__(self, *args, **kwargs)
 
         self.value = self.field.value
 
-        self.checkBox = QtGui.QCheckBox('', self)
-        self.checkBox.setChecked(self.value)
-        self.connect(self.checkBox, QtCore.SIGNAL('stateChanged(int)'), self.setValue)
-        self.hbox.addWidget(self.checkBox)
+        self.checkbox = QtGui.QCheckBox('', self)
+        self.checkbox.setChecked(self.value)
+        self.connect(self.checkbox, 
+                     QtCore.SIGNAL('stateChanged(int)'), 
+                     self.set_value)
+        self.hbox.addWidget(self.checkbox)
         self.hbox.addStretch()
-        self.hbox.addWidget(self.activeBox)
+        self.hbox.addWidget(self.activebox)
 
         if not self.active:
-            self.setActive(self.active)
-            self.activeBox.setChecked(self.active)
+            self.set_active(self.active)
+            self.activebox.setChecked(self.active)
 
-    def setValue(self, value):
+    def set_value(self, value):
         self.value = self.field.value = bool(value)
         self.emit(QtCore.SIGNAL('controlChanged()'))
     
-    def setActive(self, state):
+    def set_active(self, state):
         self.active = self.field.active = bool(state)
-        self.label.setEnabled(self.active)
-        self.checkBox.setEnabled(self.active)
+        self.label.set_enabled(self.active)
+        self.checkbox.set_enabled(self.active)
 
-    def getValue(self):
+    def get_value(self):
         return self.value
 
 class ChoiceControl(Control):
+    '''A Choice control creates a combo box, and represents a CHOICE field.'''
     def __init__(self, *args, **kwargs):
         Control.__init__(self, *args, **kwargs)
-
         self.choices = self.field.choices
         self.value = str(self.field.value)
-
-        self.choiceBox = QtGui.QComboBox(self)
-        self.choiceBox.addItems(self.choices)
+        self.choicebox = QtGui.QComboBox(self)
+        self.choicebox.addItems(self.choices)
         # select the specified value
-        self.choiceBox.setCurrentIndex(self.choiceBox.findText(self.value))
-        self.connect(self.choiceBox, QtCore.SIGNAL('activated(int)'), self.setValue)
-
-        self.hbox.addWidget(self.choiceBox)
+        self.choicebox.setCurrentIndex(self.choicebox.findText(self.value))
+        self.connect(self.choicebox, 
+                     QtCore.SIGNAL('activated(int)'), 
+                     self.set_value)
+        self.hbox.addWidget(self.choicebox)
         self.hbox.addStretch()
-        self.hbox.addWidget(self.activeBox)
-        
+        self.hbox.addWidget(self.activebox)
         if not self.active:
-            self.setActive(self.active)
-            self.activeBox.setChecked(self.active)
+            self.set_active(self.active)
+            self.activebox.setChecked(self.active)
 
-    def setValue(self, index):
-        self.value = self.field.value = self.choiceBox.itemText(index)
+    def set_value(self, index):
+        self.value = self.field.value = self.choicebox.itemText(index)
         self.emit(QtCore.SIGNAL('controlChanged()'))
-        # self.choiceBox.setCurrentIndex(self.choiceBox.findText(self.value))
+        # self.choicebox.setCurrentIndex(self.choicebox.findText(self.value))
 
-    def getValue(self):
+    def get_value(self):
         return self.value
 
-    def updateValue(self):
+    def update_value(self):
         # updates stored values according to user interaction
-        self.value = self.field.value = self.choiceBox.currentText()
+        self.value = self.field.value = self.choicebox.currentText()
         
-    def setActive(self, state):
+    def set_active(self, state):
         self.active = self.field.active = bool(state)
-        self.label.setEnabled(self.active)
-        self.choiceBox.setEnabled(self.active)
+        self.label.set_enabled(self.active)
+        self.choicebox.set_enabled(self.active)
 
 
 class NumberControl(Control):
+    '''A number control contains a slider and a spin box, and represents
+    a NUMBER field.
+    
+    It creates a DoubleSpinBox behind the scenes in case the Field has 
+    decimal values, and has some hacks to make the slider behave accordingly.'''
     def __init__(self, *args, **kwargs):
         Control.__init__(self, *args, **kwargs)
 
@@ -186,176 +191,179 @@ class NumberControl(Control):
         self.numberbox.setSingleStep(self.increment)
 
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
-        self.slider.setRange(self.min * pow(10,self.decimals), self.max * pow(10,self.decimals))
+        coef = pow(10, self.decimals)
+        self.slider.setRange(self.min * coef, self.max * coef)
         self.slider.setSingleStep(self.increment)
 
         # set widgets to initial value before connecting
-        self.setValue(self.value)
+        self.set_value(self.value)
         
         # and now connect the signals
-        #self.connect(self.slider, QtCore.SIGNAL('activated()'), self.updateNumberboxFromSlider)
-        self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'), self.setValueFromSlider)
-        self.connect(self.slider, QtCore.SIGNAL('valueChanged(int)'), self.updateNumberboxFromSlider)
+        self.connect(self.slider, 
+                     QtCore.SIGNAL('sliderReleased()'), 
+                     self.set_value_from_slider)
+        self.connect(self.slider, 
+                     QtCore.SIGNAL('valueChanged(int)'), 
+                     self.update_numberbox_from_slider)
         if self.floating:
-            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
+            self.connect(self.numberbox, 
+                         QtCore.SIGNAL('valueChanged(double)'), 
+                         self.set_value)
         else:
-            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
-
+            self.connect(self.numberbox, 
+                         QtCore.SIGNAL('valueChanged(int)'), 
+                         self.set_value)
         self.hbox.addWidget(self.slider)
         self.hbox.addWidget(self.numberbox)
-        self.hbox.addWidget(self.activeBox)
+        self.hbox.addWidget(self.activebox)
 
         if self.field.unit:
-            self.unitComboBox = QtGui.QComboBox(self)
-            self.unitComboBox.addItems(UNITS)
+            self.unit_combobox = QtGui.QComboBox(self)
+            self.unit_combobox.addItems(UNITS)
             # select the specified unit
-            self.unitComboBox.setCurrentIndex(self.unitComboBox.findText(self.field.unit))
-            self.unitComboBox.connect(self.unitComboBox, QtCore.SIGNAL('activated(int)'), self.setUnit)
-            self.hbox.insertWidget(2, self.unitComboBox)
+            current_unit = self.unit_combobox.findText(self.field.unit)
+            self.unit_combobox.setCurrentIndex(current_unit)
+            self.unit_combobox.connect(self.unit_combobox, 
+                                      QtCore.SIGNAL('activated(int)'), 
+                                      self.set_unit)
+            self.hbox.insertWidget(2, self.unit_combobox)
 
         if not self.active:
-            self.setActive(self.active)
-            self.activeBox.setChecked(self.active)
+            self.set_active(self.active)
+            self.activebox.setChecked(self.active)
 
-    def setUnit(self, index):
-        self.unit = self.field.unit = self.unitComboBox.itemText(index)
+    def set_unit(self, index):
+        self.unit = self.field.unit = self.unit_combobox.itemText(index)
 
-    def setValue(self, value):
+    def set_value(self, value):
         self.value = self.field.value = value
-        self.slider.setValue(value * pow(10, self.decimals))
-        self.numberbox.setValue(value)
+        self.slider.set_value(value * pow(10, self.decimals))
+        self.numberbox.set_value(value)
         self.emit(QtCore.SIGNAL('controlChanged()'))
 
-    def setValueFromSlider(self):
-        v = self.slider.value() / pow(10, self.decimals)
-        self.setValue(v)
+    def set_value_from_slider(self):
+        value = self.slider.value() / pow(10, self.decimals)
+        self.set_value(value)
         
-    def updateNumberboxFromSlider(self, value):
-        v = value / pow(10, self.decimals)
+    def update_numberbox_from_slider(self, val):
+        value = val / pow(10, self.decimals)
         # quick hack to prevent numberbox to sending the valueChanged
         # signal
-        self.disconnect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
-        self.disconnect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
-        self.numberbox.setValue(v)
+        self.disconnect(self.numberbox, 
+                        QtCore.SIGNAL('valueChanged(double)'), 
+                        self.set_value)
+        self.disconnect(self.numberbox, 
+                        QtCore.SIGNAL('valueChanged(int)'), 
+                        self.set_value)
+        self.numberbox.set_value(value)
         if self.floating:
-            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.setValue)
+            self.connect(self.numberbox, 
+                         QtCore.SIGNAL('valueChanged(double)'), 
+                         self.set_value)
         else:
-            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.setValue)
-
-    def getValue(self):
+            self.connect(self.numberbox, 
+                         QtCore.SIGNAL('valueChanged(int)'), 
+                         self.set_value)
+    def get_value(self):
         return self.value
     
-    def setActive(self, state):
+    def set_active(self, state):
         self.active = self.field.active = bool(state)
-        self.label.setEnabled(self.active)
-        self.numberbox.setEnabled(self.active)
+        self.label.set_enabled(self.active)
+        self.numberbox.set_enabled(self.active)
         if self.field.unit:
-            self.unitComboBox.setEnabled(self.active)
-        self.slider.setEnabled(self.active)
+            self.unit_combobox.set_enabled(self.active)
+        self.slider.set_enabled(self.active)
 
 class ColorChooserControl(Control):
+    '''A color chooser control creates a text box where color values can be
+    input, along with a colored button that reflects the currently set color.
+    
+    The button, when clicked, pops up the OS-specific color chooser dialog.
+    
+    The textbox accepts colors in hex format, as well as X11 color names --
+    see http://en.wikipedia.org/wiki/Web_colors#X11_color_names) for a
+    complete list.'''
     def __init__(self, *args, **kwargs):
         Control.__init__(self, *args, **kwargs)
 
         self.color = QtGui.QColor(self.field.value)
 
-        self.colorbtn = QtGui.QPushButton('', self)
-        self.colorbtn.setMaximumSize(QtCore.QSize(20, 20))
-        self.connect(self.colorbtn, QtCore.SIGNAL('clicked()'), self.popColorDialog)
-
+        self.colorbutton = QtGui.QPushButton('', self)
+        self.colorbutton.setMaximumSize(QtCore.QSize(20, 20))
+        self.connect(self.colorbutton, 
+                     QtCore.SIGNAL('clicked()'), 
+                     self.show_color_dialog)
         self.textbox = QtGui.QLineEdit(self)
         self.textbox.setText(self.color.name())
         self.textbox.setObjectName("textbox")
-        self.connect(self.textbox, QtCore.SIGNAL('editingFinished()'), self.applyTextBoxColor)
-
-        self.hbox.addWidget(self.colorbtn)
+        self.connect(self.textbox, 
+                     QtCore.SIGNAL('editingFinished()'), 
+                     self.apply_textbox_color)
+        self.hbox.addWidget(self.colorbutton)
         self.hbox.addWidget(self.textbox)
         # self.hbox.addStretch(10)
-        self.hbox.addWidget(self.activeBox)
+        self.hbox.addWidget(self.activebox)
 
         # set the control to the initial colour
-        self.updateColor()
+        self.update_color()
         
         if not self.active:
-            self.setActive(self.active)
+            self.set_active(self.active)
 
-    def updateColor(self):
-        self.colorbtn.setStyleSheet(
+    def update_color(self):
+        self.colorbutton.setStyleSheet(
             "QPushButton { background-color: %s }"
-            "QPushButton:pressed { background-color: %s }" % (self.color.name(), self.color.light(125).name())
+            "QPushButton:pressed { background-color: %s }" 
+            % (self.color.name(), self.color.light(125).name())
         )
         # update the textbox
         self.textbox.setText(self.color.name())
         self.field.value = self.color.name()
         self.emit(QtCore.SIGNAL('controlChanged()'))
 
-    def popColorDialog(self):
+    def show_color_dialog(self):
         self.color = QtGui.QColorDialog.getColor(self.color)
-        self.updateColor()
+        self.update_color()
 
-    def applyTextBoxColor(self):
+    def apply_textbox_color(self):
         color = QtGui.QColor(self.textbox.displayText())
         self.color = color
-        self.updateColor()
+        self.update_color()
 
-    def setValue(self, color):
+    def set_value(self, color):
         # TODO: Validate input so that the color value doesn't reset;
         # or maybe parse the value before passing it to QColor.setNamedValue()
         self.color = QtGui.QColor(color)
-        self.updateColor()
+        self.update_color()
 
-    def getValue(self):
+    def get_value(self):
         return self.field.value
     
-    def setActive(self, state):
+    def set_active(self, state):
         self.active = self.field.active = bool(state)
-        self.activeBox.setChecked(self.active)
-        self.label.setEnabled(self.active)
-        self.textbox.setEnabled(self.active)
-        self.colorbtn.setEnabled(self.active)
+        self.activebox.setChecked(self.active)
+        self.label.set_enabled(self.active)
+        self.textbox.set_enabled(self.active)
+        self.colorbutton.set_enabled(self.active)
 
-def createControlFromField(field, parent=None, w=250, h=36):
+def create_control_from_field(field, parent=None, width=250, height=36):
+    '''Given a Field instance, an appropriate Control instance is returned.'''
     control = None
     if field.type == TOGGLE:
-        control = ToggleControl(field, parent, width=w, height=h)
+        control = ToggleControl(field, parent, 
+                                width=width, height=height)
     elif field.type == COLOR:
-        control = ColorChooserControl(field, parent, width=w, height=h)
+        control = ColorChooserControl(field, parent, 
+                                      width=width, height=height)
     elif field.type == NUMBER:
-        control = NumberControl(field, parent, width=w, height=h)
+        control = NumberControl(field, parent, 
+                                width=width, height=height)
     elif field.type == CHOICE:
-        control = ChoiceControl(field, parent, width=w, height=h)
+        control = ChoiceControl(field, parent, 
+                                width=width, height=height)
     else:
         print 'Wrong field type: '
         print field.type
     return control
-
-if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
-    #win = QtGui.QWidget()
-
-    container1 = QtGui.QWidget()
-    box = QtGui.QVBoxLayout(container1)
-    box.addWidget(ColorChooserControl(name='color1'))
-    box.addWidget(NumberControl(name='number1'))
-    box.addWidget(ColorChooserControl(name='color2'))
-    box.addWidget(ColorChooserControl(name='color3'))
-
-    container2 = QtGui.QWidget()
-    box2 = QtGui.QVBoxLayout(container2)
-    box2.addWidget(ColorChooserControl(name='color4'))
-    box2.addWidget(NumberControl(name='number2'))
-    box2.addWidget(ColorChooserControl(name='color5'))
-    box2.addWidget(ColorChooserControl(name='color6'))
-    #height = 40 * box.count()
-
-    toolbox = QtGui.QToolBox()
-    toolbox.addItem(container1, 'one')
-    toolbox.addItem(container2, 'two')
-##    toolbox.addItem(ColorChooserControl(name='color4'), 'one')
-##    toolbox.addItem(ColorChooserControl(name='color5'), 'two')
-    toolbox.show()
-    #win.resize(400,600)
-    #win.show()
-
-    sys.exit(app.exec_())
 

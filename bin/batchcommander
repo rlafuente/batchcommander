@@ -29,7 +29,7 @@
 
 import sys, os
 from PyQt4 import QtGui, QtCore
-from batchcommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, createControlFromField
+from batchcommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, create_control_from_field
 from batchcommander.parser import Section, Field, parse_datafile, generate_fields
 from batchcommander.defaults import UNITS, TOGGLE, COLOR, NUMBER, CHOICE
 
@@ -58,73 +58,66 @@ class BatchCommander:
         self.immediate = True
         
         self.app = QtGui.QApplication(sys.argv)
-        self.showMainWindow()
-        self.showControlsWindow()
+        self.show_main_window()
+        self.show_controls_window()
         
-    def showMainWindow(self):
-        '''Create and display the QT interface.'''
+    def show_main_window(self):
+        '''Create and display the main interface window.'''
+        # TODO: main widget should be a frame/mainwindow in order to
+        # accomodate a status bar
         self.tab_window = QtGui.QTabWidget()
-        
         main_frame = QtGui.QFrame()
         run_button = QtGui.QPushButton('Run', main_frame)
-        main_frame.connect(run_button, QtCore.SIGNAL('clicked()'), self.outputStyFile)
+        main_frame.connect(run_button, QtCore.SIGNAL('clicked()'), self.output_style_file)
         self.tab_window.addTab(main_frame, 'Main')
-        
         data_frame = QtGui.QFrame()
         self.tab_window.addTab(data_frame, 'Data files')
-        
         self.tab_window.setGeometry(0,0,MAINBOXWIDTH,MAINBOXHEIGHT)
         self.tab_window.show()
 
-    def showControlsWindow(self):
+    def show_controls_window(self):
+        '''Create and display the controls window.'''
         datadict = parse_datafile(self.datafile)
         self.toolbox = QtGui.QToolBox()
         self.sections = generate_fields(datadict)
-
         for section in self.sections:
             # count fields
             numberOfFields = len(section.fields)
-            
             # make frame        
             container = QtGui.QFrame()
             container.setGeometry(0,0,FIELDWIDTH, FIELDHEIGHT*numberOfFields)
-            
             fieldCount = 0
-            
             for field in section.fields:
-                control = createControlFromField(field, parent=container, w=FIELDWIDTH, h=FIELDHEIGHT)
+                control = create_control_from_field(field, parent=container, w=FIELDWIDTH, h=FIELDHEIGHT)
                 # place the control in absolute coords
                 control.setGeometry(0,fieldCount*FIELDHEIGHT, FIELDWIDTH, FIELDHEIGHT)
                 if self.immediate:
                     # immediate mode = tweaking a control triggers the run procedure
-                    control.connect(control, QtCore.SIGNAL('controlChanged()'), self.outputStyFile)
-                
+                    control.connect(control, QtCore.SIGNAL('controlChanged()'), self.output_style_file)               
                 fieldCount += 1
-
             self.scrollbox = QtGui.QScrollArea()
             self.scrollbox.setWidget(container)
             # make scrollbox flat
             self.scrollbox.setFrameStyle(container.NoFrame)
             self.toolbox.addItem(self.scrollbox, section.name)
-
         self.toolbox.show()
         self.toolbox.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
 
         sys.exit(self.app.exec_())
 
-    def outputStyFile(self):
+    def output_style_file(self):
         file = open(self.outputfile, 'w')
         # begindoc string
         file.write('\AtBeginDocument{\n')
         # write each field's value
         for section in self.sections:
-            section.styleOutput(file)
+            section.output_texstyle(file)
         file.write('                }\n')
         file.close()
         os.system(self.command % {'tex_file': self.inputfile, 
                                   'pdf_file': self.pdfoutputfile})
                                   
-    def setInputFile(self, infile):
+    def set_input_file(self, infile):
         self.inputfile = infile
         self.directory = os.path.dirname(infile)
         filename = os.path.basename(infile)

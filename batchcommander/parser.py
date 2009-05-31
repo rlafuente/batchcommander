@@ -27,9 +27,9 @@
 #   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''YAML datafile parser for Batch Commander'''
 
-import yaml
 import sys
-from defaults import *
+import yaml
+from defaults import TOGGLE, COLOR, NUMBER, CHOICE
 
 class Section:
     '''A group of Field instances.'''
@@ -41,7 +41,7 @@ class Section:
         '''Add a field to this section.'''
         self.fields.append(field)
 
-    def findFieldByName(self, name):
+    def find_field_by_name(self, name):
         '''Returns the field instance whose name matches the input string.'''
         result = None
         for field in self.fields:
@@ -50,28 +50,28 @@ class Section:
                 break
         return result
 
-    def dump(self, file=sys.stdout):
+    def dump(self, outfile=sys.stdout):
         '''Writes a YAML representation of all the fields in this section 
         into a file.'''
-        file.write('%s:\n' % self.name)
+        outfile.write('%s:\n' % self.name)
         for field in self.fields:
-            field.dump(file)
-            file.write('\n')
+            field.dump(outfile)
+            outfile.write('\n')
 
-    def styleOutput(self, file=sys.stdout):
+    def output_texstyle(self, outfile=sys.stdout):
         '''Returns strings representing TeX style file commands for all fields
         in this section.'''
-        file.write('%% --------------  %s  --------------\n' % self.name)
+        outfile.write('%% --------------  %s  --------------\n' % self.name)
         for field in self.fields:
             if field.active:
-                file.write(field.styleOutput())
+                outfile.write(field.output_texstyle())
                 
-    def pyOutput(self, file=sys.stdout):
+    def output_pythonvar(self, outfile=sys.stdout):
         '''Returns strings representing Python variable declarations for all 
         fields in this section.'''
         for field in self.fields:
             if field.active:
-                file.write(field.pyOutput())
+                outfile.write(field.output_pythonvar())
 
 class Field:
     '''Represents a named entity with a variable value, along with
@@ -109,11 +109,11 @@ class Field:
         if propdict.has_key('always_active'):
             self.always_active = propdict['always_active']
 
-    def dump(self, file=sys.stdout):
+    def dump(self, outfile=sys.stdout):
         ''' Write a YAML representation of the Field data into a file.
         Useful for re-generating .data files.'''
         # TODO: Rewrite this using str.format()
-        file.writelines(['    - %s:\n' % self.name,
+        outfile.writelines(['    - %s:\n' % self.name,
                         '        longname: %s\n' % self.longname,
                         '        type: %s\n' % self.type,
                         '        value: %s\n' % self.value,
@@ -121,17 +121,17 @@ class Field:
         if self.type == TOGGLE or self.type == COLOR:
             pass
         elif self.type == CHOICE:
-            file.write('        choices: ' + ', '.join(self.choices) + '\n')
+            outfile.write('        choices: ' + ', '.join(self.choices) + '\n')
         elif self.type == NUMBER:
-            file.write('        min: %i\n' % self.min)
-            file.write('        max: %i\n' % self.max)
-            file.write('        increment: %i\n' % self.increment)
+            outfile.write('        min: %i\n' % self.min)
+            outfile.write('        max: %i\n' % self.max)
+            outfile.write('        increment: %i\n' % self.increment)
             if self.decimals:
-                file.write('        decimals: %i\n' % self.decimals)
+                outfile.write('        decimals: %i\n' % self.decimals)
             if self.unit:
-                file.write('        unit: %s\n' % self.unit)
+                outfile.write('        unit: %s\n' % self.unit)
 
-    def styleOutput(self):
+    def output_texstyle(self):
         '''Returns a string representing a TeX style file command.'''
         # TODO: Rewrite this using str.format()
         value = self.value
@@ -147,7 +147,7 @@ class Field:
         cmd += '\n'
         return cmd
         
-    def pyOutput(self):
+    def output_pythonvar(self):
         # TODO: Rewrite this using str.format()
         '''Returns a string representing a Python variable declaration.'''
         if self.type == 'color':
@@ -167,28 +167,26 @@ def generate_fields(datadict):
     '''Accepts a datadict and returns a list of Section instances.
     Should be fed the output of the parse_datafile function.'''
     section_list = []
-    for section in datadict:
-        s = Section(section)
-        fields = datadict[section]
+    for section_key in datadict:
+        section = Section(section_key)
+        fields = datadict[section_key]
         for item in fields:
             # some twisting to sort through the py-yaml ordered
             # mapping implementation, which is one-key dicts inside
             # a list
             fieldname = item.keys()[0]
             properties = item[fieldname]
-            c = Field(fieldname, properties)
-            s.add(c)
-        section_list.append(s)
+            field = Field(fieldname, properties)
+            section.add(field)
+        section_list.append(section)
     return section_list
 
-def dumpSectionList(sectionList, file=sys.stdout):
-    for section in sectionList:
-        section.dump(file)
-
+"""
 if __name__ == '__main__':
     '''Read the file specified in stdin and print structure to stdout'''
-    datafilename = sys.argv[1]
-    datadict = parse_datafile(datafilename)
-    sectionList = generate_fields(datadict)
-    dumpSectionList(sectionList)
-
+    filename = sys.argv[1]
+    data = parse_datafile(filename)
+    sections = generate_fields(data)
+    for section in sections:
+        section.dump()
+"""
