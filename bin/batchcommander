@@ -57,6 +57,7 @@ class BatchCommander:
         self.sections = None
         self.immediate = True
         
+    def show_ui(self):       
         self.app = QtGui.QApplication(sys.argv)
         self.show_main_window()
         self.show_controls_window()
@@ -68,7 +69,7 @@ class BatchCommander:
         self.tab_window = QtGui.QTabWidget()
         main_frame = QtGui.QFrame()
         run_button = QtGui.QPushButton('Run', main_frame)
-        main_frame.connect(run_button, QtCore.SIGNAL('clicked()'), self.output_style_file)
+        main_frame.connect(run_button, QtCore.SIGNAL('clicked()'), self.run)
         self.tab_window.addTab(main_frame, 'Main')
         data_frame = QtGui.QFrame()
         self.tab_window.addTab(data_frame, 'Data files')
@@ -98,7 +99,7 @@ class BatchCommander:
                     # immediate mode = tweaking a control does a run
                     control.connect(control, 
                                     QtCore.SIGNAL('controlChanged()'), 
-                                    self.output_style_file)               
+                                    self.run)               
                 fieldCount += 1
             self.scrollbox = QtGui.QScrollArea()
             self.scrollbox.setWidget(container)
@@ -110,7 +111,7 @@ class BatchCommander:
 
         sys.exit(self.app.exec_())
 
-    def output_style_file(self):
+    def run(self):
         file = open(self.outputfile, 'w')
         # begindoc string
         file.write('\AtBeginDocument{\n')
@@ -133,3 +134,4 @@ class BatchCommander:
 
 if __name__ == '__main__':
     bc = BatchCommander(datafile=sys.argv[1])
+    bc.show_ui()
