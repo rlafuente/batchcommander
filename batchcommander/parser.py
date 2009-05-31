@@ -133,7 +133,6 @@ class Field:
 
     def output_texstyle(self):
         '''Returns a string representing a TeX style file command.'''
-        # TODO: Rewrite this using str.format()
         value = self.value
         cmd = ' ' * 18
         cmd += '\\'
@@ -148,7 +147,6 @@ class Field:
         return cmd
         
     def output_pythonvar(self):
-        # TODO: Rewrite this using str.format()
         '''Returns a string representing a Python variable declaration.'''
         if self.type == 'color':
             value = "'" + str(self.value) + "'"
