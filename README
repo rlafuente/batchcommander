@@ -1,0 +1,27 @@
+Introduction
+============
+
+
+
+Installation
+============
+
+Dependencies
+------------
+
+Following are the packages that Batch Commander depends on. The version
+numbers are the minimum version required for each package.
+
+  * Python 2.5
+  * Qt 4.3
+  * PyQt 4.3
+  * PyYAML 3.05
+
+Make sure you have all these packages installed, otherwise you might
+run into cryptic error messages. You'll only need to type the following
+commands to get them up and running:
+
+  * Debian-based distros:
+
+    sudo aptitude install python2.5 python-yaml python-qt4
+q
