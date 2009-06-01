@@ -33,29 +33,39 @@ from batchcommander.controls import ColorChooserControl, NumberControl, ToggleCo
 from batchcommander.parser import Section, Field, parse_datafile, generate_fields
 from batchcommander.defaults import UNITS, TOGGLE, COLOR, NUMBER, CHOICE
 
+
 DEFAULT_INPUTFILE = './sarovar.tex'
 DEFAULT_SCRIPTFILE = './river_valley.sty'
 DEFAULT_OUTPUTFILE = './output.pdf'
+# FIXME: the pdf output name is not applied
+DEFAULT_COMMAND = 'pdflatex -halt-on-error %(tex_file)s %(pdf_file)s'
+DEFAULT_IMMEDIATE_MODE = True
 
 MAINBOXWIDTH = 370
 MAINBOXHEIGHT = 200
 FIELDHEIGHT = 36
 FIELDWIDTH = 375
+MODE_TEX = 'tex'
+MODE_PYTHON = 'python'
 
 class BatchCommander:
     '''Launch the Batch Commander UI.'''
-    def __init__(self, datafile, 
+    def __init__(self, 
+                 datafile, 
                  inputfile=DEFAULT_INPUTFILE, 
                  scriptfile=DEFAULT_SCRIPTFILE, 
-                 outputfile=DEFAULT_OUTPUTFILE):
+                 outputfile=DEFAULT_OUTPUTFILE,
+                 command=DEFAULT_COMMAND,
+                 immediate_mode=DEFAULT_IMMEDIATE_MODE,
+                 output_mode=MODE_TEX):
         self.datafile = datafile
         self.inputfile = inputfile
         self.scriptfile = scriptfile
         self.outputfile = outputfile
+        self.outputmode = output_mode
         self.sections = None
-        self.immediate_mode = True
-        # FIXME: the pdf output name is not applied
-        self.command = 'pdflatex -halt-on-error %(tex_file)s %(pdf_file)s'
+        self.immediate_mode = immediate_mode
+        self.command = command
         self.process = QtCore.QProcess()
         # self.process.setStandardOutputFile(sys.stdout)
         self.process.setStandardErrorFile('error.log')
@@ -179,12 +189,17 @@ class BatchCommander:
         self.toolbox.setDisabled(True)
         self.status.showMessage('Generating %s...' % (self.scriptfile))
         scriptfile = open(self.scriptfile, 'w')
-        # begindoc string
-        scriptfile.write('\AtBeginDocument{\n')
-        # write each field's value
-        for section in self.sections:
-            section.output_texstyle(scriptfile)
-        scriptfile.write('                }\n')
+    
+        if self.outputmode == MODE_TEX:
+            scriptfile.write('\AtBeginDocument{\n')
+            for section in self.sections:
+                section.output_texstyle(scriptfile)
+            scriptfile.write('                }\n')
+            
+        elif self.outputmode == MODE_PYTHON:
+            for section in self.sections:
+                section.output_pythonvar(scriptfile)
+                
         scriptfile.close()
         self.status.showMessage('Outputting %s...' % (self.outputfile))
         self.process.start(self.command % {'tex_file': self.inputfile, 
