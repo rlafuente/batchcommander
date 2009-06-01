@@ -69,7 +69,9 @@ class BatchCommander:
         self.process = QtCore.QProcess()
         # self.process.setStandardOutputFile(sys.stdout)
         self.error_log_filename = 'error.log'
+        self.output_log_filename = 'output.log'
         self.process.setStandardErrorFile(self.error_log_filename)
+        self.process.setStandardOutputFile(self.output_log_filename)
         
     def show_ui(self):       
         self.app = QtGui.QApplication(sys.argv)
