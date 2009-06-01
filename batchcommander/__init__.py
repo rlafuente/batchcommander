@@ -248,6 +248,7 @@ class BatchCommander:
         if not filename:
             return False
         self.scriptfile = str(filename)
+        self.scriptfile_textbox.setText(self.scriptfile)
     
     def open_outfile_dialog(self):
         pwd = os.getcwd()
@@ -258,6 +259,7 @@ class BatchCommander:
         if not filename:
             return False
         self.outputfile = str(filename)
+        self.outputfile_textbox.setText(self.outputfile)
     
     def set_immediate_mode(self, value):
         self.immediate_mode = bool(value)
