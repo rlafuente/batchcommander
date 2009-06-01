@@ -68,7 +68,8 @@ class BatchCommander:
         self.command = command
         self.process = QtCore.QProcess()
         # self.process.setStandardOutputFile(sys.stdout)
-        self.process.setStandardErrorFile('error.log')
+        self.error_log_filename = 'error.log'
+        self.process.setStandardErrorFile(self.error_log_filename)
         
     def show_ui(self):       
         self.app = QtGui.QApplication(sys.argv)
@@ -259,7 +260,7 @@ class BatchCommander:
         if not filename:
             return False
         self.outputfile = str(filename)
-        self.outputfile_textbox.setText(self.outputfile)
+        self.outfile_textbox.setText(self.outputfile)
     
     def set_immediate_mode(self, value):
         self.immediate_mode = bool(value)
@@ -275,7 +276,11 @@ class BatchCommander:
                                    self.run)
         
     def on_process_finished(self, value):
-        if value:
+        # error codes from QProcess are not to be trusted, so we also
+        # check if the log file has stuff in it
+        log = open(self.error_log_filename, 'r')
+        error_log_has_stuff = bool(log.read())
+        if value or error_log_has_stuff:
             self.status.showMessage('Failed -- see the error.log file for details')
         else:
             self.status.showMessage('Done!')
