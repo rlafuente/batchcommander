@@ -8,6 +8,14 @@ try:
 except ImportError: # quick semi-nasty fallback for non-windows/win32com case
     homedir = os.path.expanduser("~")
 
+local = os.path.join(homedir, '.batchcommander/')
+print local
+
+# this will work someday
+datafiles = []
+datafiles.extend([(os.path.join('local', root) ,[os.path.join(root, file_)
+for file_ in files]) for root,dir,files in os.walk('datafiles')])
+
 setup(name="batchcommander",
       version="0.1",
       author="Ricardo Lafuente",
@@ -15,8 +23,7 @@ setup(name="batchcommander",
       url="http://bitbucket.org/rlafuente/batchcommander",
       license="GNU General Public License (GPL)",
       packages=['batchcommander'],
-      package_data={"batchcommander": ["datafiles/*"]},
-#      datafiles = datafiles,
+#      data_files = datafiles,
       scripts=["bin/batchcommander"],
 #      windows=[{"script": "bin/batchcommander"}],
 #      options={"py2exe": {"skip_archive": True, "includes": ["sip"]}}
