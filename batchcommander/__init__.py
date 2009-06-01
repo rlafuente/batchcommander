@@ -38,7 +38,7 @@ DEFAULT_INPUTFILE = './sarovar.tex'
 DEFAULT_SCRIPTFILE = './river_valley.sty'
 DEFAULT_OUTPUTFILE = './output.pdf'
 # FIXME: the pdf output name is not applied
-DEFAULT_COMMAND = 'pdflatex -halt-on-error %(tex_file)s %(pdf_file)s'
+DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s %(output_file)s'
 DEFAULT_IMMEDIATE_MODE = True
 
 MAINBOXWIDTH = 370
@@ -202,8 +202,8 @@ class BatchCommander:
                 
         scriptfile.close()
         self.status.showMessage('Outputting %s...' % (self.outputfile))
-        self.process.start(self.command % {'tex_file': self.inputfile, 
-                                           'pdf_file': self.outputfile})
+        self.process.start(self.command % {'input_file': self.inputfile, 
+                                           'output_file': self.outputfile})
                                   
     #### Callbacks ####
     
