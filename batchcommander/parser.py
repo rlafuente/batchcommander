@@ -50,14 +50,6 @@ class Section:
                 break
         return result
 
-    def dump(self, outfile=sys.stdout):
-        '''Writes a YAML representation of all the fields in this section 
-        into a file.'''
-        outfile.write('%s:\n' % self.name)
-        for field in self.fields:
-            field.dump(outfile)
-            outfile.write('\n')
-
     def output_texstyle(self, outfile=sys.stdout):
         '''Returns strings representing TeX style file commands for all fields
         in this section.'''
@@ -72,6 +64,14 @@ class Section:
         for field in self.fields:
             if field.active:
                 outfile.write(field.output_pythonvar())
+
+    def dump(self, outfile=sys.stdout):
+        '''Writes a YAML representation of all the fields in this section 
+        into a file.'''
+        outfile.write('%s:\n' % self.name)
+        for field in self.fields:
+            field.dump(outfile)
+            outfile.write('\n')
 
 class Field:
     '''Represents a named entity with a variable value, along with
@@ -109,51 +109,55 @@ class Field:
         if propdict.has_key('always_active'):
             self.always_active = propdict['always_active']
 
-    def dump(self, outfile=sys.stdout):
-        ''' Write a YAML representation of the Field data into a file.
-        Useful for re-generating .data files.'''
-        # TODO: Rewrite this using str.format()
-        outfile.writelines(['    - %s:\n' % self.name,
-                        '        longname: %s\n' % self.longname,
-                        '        type: %s\n' % self.type,
-                        '        value: %s\n' % self.value,
-        ])
-        if self.type == TOGGLE or self.type == COLOR:
-            pass
-        elif self.type == CHOICE:
-            outfile.write('        choices: ' + ', '.join(self.choices) + '\n')
-        elif self.type == NUMBER:
-            outfile.write('        min: %i\n' % self.min)
-            outfile.write('        max: %i\n' % self.max)
-            outfile.write('        increment: %i\n' % self.increment)
-            if self.decimals:
-                outfile.write('        decimals: %i\n' % self.decimals)
-            if self.unit:
-                outfile.write('        unit: %s\n' % self.unit)
-
     def output_texstyle(self):
         '''Returns a string representing a TeX style file command.'''
         value = self.value
-        cmd = ' ' * 18
-        cmd += '\\'
-        if self.type == 'toggle':
+        if self.type == TOGGLE:
             if self.value:
+                cmd = ' ' * 18
+                cmd += '\\'
                 cmd += self.name
+                cmd += '\n'
+                return cmd
         else:
-            cmd += self.name + '=' + str(value)
-        if self.unit:
-            cmd += self.unit
-        cmd += '\n'
-        return cmd
+            cmd = ' ' * 18
+            cmd += '\\'
+            cmd += self.name + '=' + str(value)      
+            if self.unit:
+                cmd += self.unit
+            cmd += '\n'
+            return cmd
+        return ''
         
     def output_pythonvar(self):
         '''Returns a string representing a Python variable declaration.'''
-        if self.type == 'color':
+        if self.type == COLOR:
             value = "'" + str(self.value) + "'"
         else:
             value = str(self.value)
         cmd = self.name + ' = ' + value + '\n'
         return cmd
+
+    def dump(self, outfile=sys.stdout):
+        ''' Write a YAML representation of the Field data into a file.
+        Useful for re-generating .data files.'''
+        outfile.writelines(['    - %s:\n' % self.name,
+                            '        longname: %s\n' % self.longname,
+                            '        type: %s\n' % self.type,
+                            '        value: %s\n' % self.value,
+        ])
+        if self.type == TOGGLE or self.type == COLOR:
+            pass
+        elif self.type == CHOICE:
+            outfile.write(  '        choices: ' + ', '.join(self.choices) + '\n')
+        elif self.type == NUMBER:
+            outfile.write(  '        min: %i\n' % self.min)
+            outfile.write(  '        max: %i\n' % self.max)
+            outfile.write(  '        increment: %i\n' % self.increment)
+            if self.decimals:
+                outfile.write('        decimals: %i\n' % self.decimals)
+            if self.unit:
+                outfile.write('        unit: %s\n' % self.unit)
 
 def parse_datafile(datafilename):
     '''Reads a YAML-formatted datafile and returns a dictionary'''

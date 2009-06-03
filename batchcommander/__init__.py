@@ -204,11 +204,13 @@ class BatchCommander:
 
     def show_controls_window(self):
         '''Create and display the controls window.'''
-        datadict = parse_datafile(self.datafile)
-        self.toolbox = QtGui.QToolBox()
-        self.sections = generate_fields(datadict)
+        
+        self.controls_window = QtGui.QFrame()       
+        self.toolbox = QtGui.QToolBox(self.controls_window)
         self.controls = []
-        for section in self.sections:
+        # FIXME: This won't do, just an ugly hack for now
+        dataset = self.datasets[0]
+        for section in dataset.sections:
             # count fields
             numberOfFields = len(section.fields)
             # make frame        
@@ -231,8 +233,9 @@ class BatchCommander:
             self.toolbox.addItem(self.scrollbox, section.name)
         # apply immediate mode settings to all fields
         self.set_immediate_mode(self.immediate_mode)
-        self.toolbox.show()
-        self.toolbox.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
+        self.controls_window.show()
+        self.controls_window.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
+        self.toolbox.setGeometry(0,24,FIELDWIDTH+25,400)
 
         sys.exit(self.app.exec_())
 
@@ -244,15 +247,17 @@ class BatchCommander:
     
         if self.outputmode == MODE_TEX:
             scriptfile.write('\AtBeginDocument{\n')
-            # TODO: for dataset in self.datasets:
-            #     if dataset.active:    
-            for section in self.sections:
-                section.output_texstyle(scriptfile)
+            for dataset in self.datasets:
+                if dataset.active:    
+                    for section in dataset.sections:
+                        section.output_texstyle(scriptfile)
             scriptfile.write('                }\n')
             
         elif self.outputmode == MODE_PYTHON:
-            for section in self.sections:
-                section.output_pythonvar(scriptfile)
+            for dataset in self.datasets:
+                if dataset.active:
+                    for section in dataset.sections:
+                        section.output_pythonvar(scriptfile)
                 
         scriptfile.close()
         self.status.showMessage('Outputting %s...' % (self.outputfile))
