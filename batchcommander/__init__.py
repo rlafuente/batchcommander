@@ -34,10 +34,31 @@ from batchcommander.parser import Section, Field, parse_datafile, generate_field
 from batchcommander.defaults import UNITS, TOGGLE, COLOR, NUMBER, CHOICE
 
 
+class DataSet:
+    '''Represents the contents of a .data file.'''
+    def __init__(self, filepath):
+        self.name = os.path.basename(filepath)
+        self.path = filepath
+        print self.name
+        print self.path
+        datadict = parse_datafile(self.path)
+        self.sections = generate_fields(datadict)
+        self.widget = None
+        self.active = False
+
 DEFAULT_INPUTFILE = './sarovar.tex'
 DEFAULT_SCRIPTFILE = './river_valley.sty'
 DEFAULT_OUTPUTFILE = './output.pdf'
-# FIXME: the pdf output name is not applied
+DEFAULT_DATAFILES_DIR = '../src/datafiles'
+DEFAULT_DATAFILES = []
+for result in os.walk(DEFAULT_DATAFILES_DIR):
+    directory, dirs, files = result
+    for filename in files:
+        if os.path.splitext(filename)[1] == '.data':
+            filepath = os.path.join(directory, filename)
+            dataset = DataSet(filepath)
+            DEFAULT_DATAFILES.append(dataset)
+# FIXME: the pdf output name is not applied, outputfile not considered
 DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s %(output_file)s'
 DEFAULT_IMMEDIATE_MODE = True
 
@@ -46,12 +67,13 @@ MAINBOXHEIGHT = 200
 FIELDHEIGHT = 36
 FIELDWIDTH = 375
 MODE_TEX = 'tex'
-MODE_PYTHON = 'python'
+MODE_PYTHON = 'python'        
 
 class BatchCommander:
-    '''Launch the Batch Commander UI.'''
+    '''Batch Commander UI runner'''
     def __init__(self, 
                  datafile, 
+                 datafiles=DEFAULT_DATAFILES,
                  inputfile=DEFAULT_INPUTFILE, 
                  scriptfile=DEFAULT_SCRIPTFILE, 
                  outputfile=DEFAULT_OUTPUTFILE,
@@ -59,6 +81,7 @@ class BatchCommander:
                  immediate_mode=DEFAULT_IMMEDIATE_MODE,
                  output_mode=MODE_TEX):
         self.datafile = datafile
+        self.datasets = datafiles
         self.inputfile = inputfile
         self.scriptfile = scriptfile
         self.outputfile = outputfile
@@ -138,12 +161,38 @@ class BatchCommander:
         main_frame.connect(immediate_box, 
                            QtCore.SIGNAL('stateChanged(int)'), 
                            self.set_immediate_mode)                   
-                           
         self.tab_bar.addTab(main_frame, '&Main')
-        data_frame = QtGui.QFrame()
+        
+        data_frame = QtGui.QFrame()        
+        list_container = QtGui.QScrollArea(data_frame)
+        list_container.setGeometry(10,10, 220, 120)
+        self.data_list = QtGui.QListWidget(list_container)
+        # list widget size is the same as the container
+        self.data_list.setGeometry(list_container.contentsRect())
+        self.data_list_items = []
+        for dataset in self.datasets:
+            # show just the item name
+            name = dataset.name
+            it = QtGui.QListWidgetItem(name, self.data_list)
+            dataset.widget = it
+            it.setFlags(QtCore.Qt.ItemIsEnabled|
+                        QtCore.Qt.ItemIsUserCheckable|
+                        QtCore.Qt.ItemIsSelectable)
+            it.setCheckState(QtCore.Qt.Unchecked)
+            self.data_list_items.append(it)
+        self.data_list.connect(self.data_list,
+                               QtCore.SIGNAL('itemChanged(QListWidgetItem *)'),
+                               self.on_list_item_changed)
+        # check the initial datafile
+        # should instead check the first dataset
+        for item in self.data_list_items:
+            if item.text() == os.path.basename(self.datafile):
+                item.setCheckState(QtCore.Qt.Checked)
+        
         self.tab_bar.addTab(data_frame, '&Data files')
         options_frame = QtGui.QFrame()
         self.tab_bar.addTab(options_frame, '&Options')
+        
         tab_bar_height = MAINBOXHEIGHT - self.status.height()
         self.tab_bar.setGeometry(0, 0, MAINBOXWIDTH, tab_bar_height)
         self.main_window.setGeometry(0, 0, MAINBOXWIDTH, MAINBOXHEIGHT)
@@ -195,6 +244,8 @@ class BatchCommander:
     
         if self.outputmode == MODE_TEX:
             scriptfile.write('\AtBeginDocument{\n')
+            # TODO: for dataset in self.datasets:
+            #     if dataset.active:    
             for section in self.sections:
                 section.output_texstyle(scriptfile)
             scriptfile.write('                }\n')
@@ -276,7 +327,13 @@ class BatchCommander:
                 control.disconnect(control, 
                                    QtCore.SIGNAL('controlChanged()'), 
                                    self.run)
-        
+    
+    def on_list_item_changed(self, item):
+        for dataset in self.datasets:
+            if item.text() == dataset.name:
+                dataset.active = bool(item.checkState())
+        print item.text(), item.checkState()
+    
     def on_process_finished(self, value):
         # error codes from QProcess are not to be trusted, so we also
         # check if the log file has stuff in it
@@ -289,11 +346,22 @@ class BatchCommander:
         self.run_button.setEnabled(True)
         self.toolbox.setEnabled(True)
         
-    def add_datafiles(self, filelist):
-        self.datafiles.extend()
+    def add_dataset(self, filepath):
+        dataset = filename = os.path.basename(filepath)
+        self.datasets.append(dataset)
+        # TODO: refresh controls window
         
-    def remove_datafile(self, name):
-        self.datafiles.pop(self.datafiles.index(name))
+    def remove_dataset(self, dataset):
+        del self.dataset[filename]
+        # TODO: refresh controls window
+        # check if it's the last
+        # if it is, grey out the remove box
+        
+    def enable_dataset(self, dataset):
+        dataset.active = True
+        
+    def disable_dataset(self, filename):
+        dataset.active = False
 
 if __name__ == '__main__':
     bc = BatchCommander(datafile=sys.argv[1])
