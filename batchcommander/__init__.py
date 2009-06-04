@@ -28,24 +28,29 @@
 '''Launch the Batch Commander GUI utility'''
 
 import sys, os
+import logging
 from PyQt4 import QtGui, QtCore
+
 from batchcommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, create_control_from_field
 from batchcommander.parser import Section, Field, parse_datafile, generate_fields
 from batchcommander.defaults import *
 
-
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger("BatchCommander")
 
 class DataSet:
     '''Represents the contents of a .data file.'''
     def __init__(self, filepath):
         self.name = os.path.basename(filepath)
         self.path = filepath
-        print self.name
-        print self.path
+        log.info('Loading dataset from ' + self.name + ' ...')
         datadict = parse_datafile(self.path)
         self.sections = generate_fields(datadict)
         self.widget = None
         self.active = False
+        
+    def __str__(self):
+        return self.name
 
 for result in os.walk(DEFAULT_DATAFILES_DIR):
     directory, dirs, files = result
@@ -79,6 +84,10 @@ class BatchCommander:
         self.output_log_filename = 'output.log'
         self.process.setStandardErrorFile(self.error_log_filename)
         self.process.setStandardOutputFile(self.output_log_filename)
+        
+        # we need this here for now, otherwise it borks
+        # this will refer to the combobox in the control window
+        self.dataset_selector = None
         
     def show_ui(self):       
         self.app = QtGui.QApplication(sys.argv)
@@ -186,15 +195,44 @@ class BatchCommander:
         self.status.showMessage('Ready.')
         self.main_window.show()
 
+    def update_selector(self):
+        if self.dataset_selector:
+            self.dataset_selector.clear()
+            active_datasets = [dataset.name for dataset in self.datasets \
+                                    if dataset.active]    
+            self.dataset_selector.addItems(active_datasets)
+
     def show_controls_window(self):
         '''Create and display the controls window.'''
         
-        self.controls_window = QtGui.QFrame()       
+        self.controls_window = QtGui.QFrame()   
+          
+        self.dataset_selector = QtGui.QComboBox(self.controls_window)
+        ## self.dataset_selector.setGeometry(5, 5, 100, 30)
+        self.update_selector()
+        self.controls_window.connect(self.dataset_selector,
+                                     QtCore.SIGNAL('activated(int)'),
+                                     self.on_selector_changed)
+                  
+        self.current_dataset = self.datasets[0]
         self.toolbox = QtGui.QToolBox(self.controls_window)
+        
+        self.update_toolbox()
+        
+        self.set_immediate_mode(self.immediate_mode)
+        self.controls_window.show()
+        self.controls_window.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
+        self.toolbox.setGeometry(0,24,FIELDWIDTH+25,400)
+        
+        sys.exit(self.app.exec_())
+        
+    def update_toolbox(self):
+        # clear it
+        for i in range(self.toolbox.count()):
+            self.toolbox.removeItem(0)
+        
         self.controls = []
-        # FIXME: This won't do, just an ugly hack for now
-        dataset = self.datasets[0]
-        for section in dataset.sections:
+        for section in self.current_dataset.sections:
             # count fields
             numberOfFields = len(section.fields)
             # make frame        
@@ -210,18 +248,11 @@ class BatchCommander:
                                     FIELDWIDTH, FIELDHEIGHT)
                 self.controls.append(control)         
                 fieldCount += 1
-            self.scrollbox = QtGui.QScrollArea()
-            self.scrollbox.setWidget(container)
+            scrollbox = QtGui.QScrollArea()
+            scrollbox.setWidget(container)
             # make scrollbox flat
-            self.scrollbox.setFrameStyle(container.NoFrame)
-            self.toolbox.addItem(self.scrollbox, section.name)
-        # apply immediate mode settings to all fields
-        self.set_immediate_mode(self.immediate_mode)
-        self.controls_window.show()
-        self.controls_window.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
-        self.toolbox.setGeometry(0,24,FIELDWIDTH+25,400)
-
-        sys.exit(self.app.exec_())
+            scrollbox.setFrameStyle(container.NoFrame)
+            self.toolbox.addItem(scrollbox, section.name)
 
     def run(self):
         self.run_button.setDisabled(True)
@@ -318,10 +349,24 @@ class BatchCommander:
                                    self.run)
     
     def on_list_item_changed(self, item):
+        value = bool(item.checkState())
         for dataset in self.datasets:
             if item.text() == dataset.name:
-                dataset.active = bool(item.checkState())
-        print item.text(), item.checkState()
+                if value:
+                    self.enable_dataset(dataset)
+                else:
+                    self.disable_dataset(dataset)
+        
+    def on_selector_changed(self, index):
+        prev_dataset_name = self.current_dataset.name
+        new_dataset_name = self.dataset_selector.itemText(index)
+        
+        if prev_dataset_name != new_dataset_name:
+            for dataset in self.datasets:
+                if dataset.name == new_dataset_name:
+                    self.current_dataset = dataset
+            self.update_toolbox()
+        
     
     def on_process_finished(self, value):
         # error codes from QProcess are not to be trusted, so we also
@@ -341,16 +386,38 @@ class BatchCommander:
         # TODO: refresh controls window
         
     def remove_dataset(self, dataset):
-        del self.dataset[filename]
+        for ds in self.datasets:
+            if ds.name == dataset.name:
+                del ds
+        ## del self.datasets[dataset]
         # TODO: refresh controls window
         # check if it's the last
         # if it is, grey out the remove box
         
     def enable_dataset(self, dataset):
+        log.debug('Enabling dataset ' + dataset.name)
         dataset.active = True
+        self.update_selector()
         
-    def disable_dataset(self, filename):
+    def disable_dataset(self, dataset):
+        # TODO: what do we do if it's the last one selected?
+        log.debug('Disabling dataset ' + dataset.name)
         dataset.active = False
+        if dataset == self.current_dataset:
+            # the combobox resets to the first item, so we update current dataset
+            # to that. Not elegant, but working so far.
+            for dataset in self.datasets:
+                if dataset.active:
+                    self.current_dataset = dataset
+                    self.update_toolbox()
+            log.debug('Current dataset set to ' + self.current_dataset.name)
+        self.update_selector()            
+        
+    def dataset_by_name(self, name):
+        for dataset in self.datasets:
+            if name == dataset.name:
+                return dataset
+        return None
 
 if __name__ == '__main__':
     bc = BatchCommander(datafile=sys.argv[1])
