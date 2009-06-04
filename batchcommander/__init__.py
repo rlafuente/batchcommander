@@ -31,7 +31,8 @@ import sys, os
 from PyQt4 import QtGui, QtCore
 from batchcommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, create_control_from_field
 from batchcommander.parser import Section, Field, parse_datafile, generate_fields
-from batchcommander.defaults import UNITS, TOGGLE, COLOR, NUMBER, CHOICE
+from batchcommander.defaults import *
+
 
 
 class DataSet:
@@ -46,11 +47,6 @@ class DataSet:
         self.widget = None
         self.active = False
 
-DEFAULT_INPUTFILE = './sarovar.tex'
-DEFAULT_SCRIPTFILE = './river_valley.sty'
-DEFAULT_OUTPUTFILE = './output.pdf'
-DEFAULT_DATAFILES_DIR = '../src/datafiles'
-DEFAULT_DATAFILES = []
 for result in os.walk(DEFAULT_DATAFILES_DIR):
     directory, dirs, files = result
     for filename in files:
@@ -58,21 +54,10 @@ for result in os.walk(DEFAULT_DATAFILES_DIR):
             filepath = os.path.join(directory, filename)
             dataset = DataSet(filepath)
             DEFAULT_DATAFILES.append(dataset)
-# FIXME: the pdf output name is not applied, outputfile not considered
-DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s %(output_file)s'
-DEFAULT_IMMEDIATE_MODE = True
-
-MAINBOXWIDTH = 370
-MAINBOXHEIGHT = 200
-FIELDHEIGHT = 36
-FIELDWIDTH = 375
-MODE_TEX = 'tex'
-MODE_PYTHON = 'python'        
 
 class BatchCommander:
     '''Batch Commander UI runner'''
     def __init__(self, 
-                 datafile, 
                  datafiles=DEFAULT_DATAFILES,
                  inputfile=DEFAULT_INPUTFILE, 
                  scriptfile=DEFAULT_SCRIPTFILE, 
@@ -80,7 +65,6 @@ class BatchCommander:
                  command=DEFAULT_COMMAND,
                  immediate_mode=DEFAULT_IMMEDIATE_MODE,
                  output_mode=MODE_TEX):
-        self.datafile = datafile
         self.datasets = datafiles
         self.inputfile = inputfile
         self.scriptfile = scriptfile
@@ -186,7 +170,7 @@ class BatchCommander:
         # check the initial datafile
         # should instead check the first dataset
         for item in self.data_list_items:
-            if item.text() == os.path.basename(self.datafile):
+            if item.text() == self.datasets[0].name:
                 item.setCheckState(QtCore.Qt.Checked)
         
         self.tab_bar.addTab(data_frame, '&Data files')
