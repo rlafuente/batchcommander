@@ -31,6 +31,22 @@ import sys
 import yaml
 from defaults import TOGGLE, COLOR, NUMBER, CHOICE
 
+class DataSet:
+    '''Represents the contents of a .data file.
+    Accepts a file path and generates a list of sections, accessible
+    through Dataset.sections .'''
+    def __init__(self, filepath):
+        self.name = os.path.basename(filepath)
+        self.path = filepath
+        log.info('Loading dataset from ' + self.name + ' ...')
+        datadict = parse_datafile(self.path)
+        self.sections = generate_fields(datadict)
+        self.widget = None
+        self.active = False
+        
+    def __str__(self):
+        return self.name
+
 class Section:
     '''A group of Field instances.'''
     def __init__(self, name):

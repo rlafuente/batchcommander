@@ -29,28 +29,15 @@
 
 import sys, os
 import logging
+from datetime import datetime
 from PyQt4 import QtGui, QtCore
 
-from batchcommander.controls import ColorChooserControl, NumberControl, ToggleControl, ChoiceControl, create_control_from_field
-from batchcommander.parser import Section, Field, parse_datafile, generate_fields
+from batchcommander.controls import create_control_from_field
+from batchcommander.parser import Dataset
 from batchcommander.defaults import *
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("BatchCommander")
-
-class DataSet:
-    '''Represents the contents of a .data file.'''
-    def __init__(self, filepath):
-        self.name = os.path.basename(filepath)
-        self.path = filepath
-        log.info('Loading dataset from ' + self.name + ' ...')
-        datadict = parse_datafile(self.path)
-        self.sections = generate_fields(datadict)
-        self.widget = None
-        self.active = False
-
-    def __str__(self):
-        return self.name
 
 for result in os.walk(DEFAULT_DATAFILES_DIR):
     directory, dirs, files = result
@@ -100,6 +87,9 @@ class BatchCommander:
         self.main_window = QtGui.QMainWindow()
         self.tab_bar = QtGui.QTabWidget(self.main_window)
         self.status = self.main_window.statusBar()
+        
+        ### Main tab ###
+
         main_frame = QtGui.QFrame()
 
         self.infile_textbox = QtGui.QLineEdit(main_frame)
@@ -157,6 +147,8 @@ class BatchCommander:
                            self.set_immediate_mode)
         self.tab_bar.addTab(main_frame, '&Main')
 
+        ### Datafiles tab ###
+
         data_frame = QtGui.QFrame()
         list_container = QtGui.QScrollArea(data_frame)
         list_container.setGeometry(10,10, 220, 120)
@@ -193,8 +185,13 @@ class BatchCommander:
                 item.setCheckState(QtCore.Qt.Checked)
 
         self.tab_bar.addTab(data_frame, '&Data files')
+
+        ### Options tab ###
+
         options_frame = QtGui.QFrame()
         self.tab_bar.addTab(options_frame, '&Options')
+
+        ### wrap up main window ###
 
         tab_bar_height = MAINBOXHEIGHT - self.status.height()
         self.tab_bar.setGeometry(0, 0, MAINBOXWIDTH, tab_bar_height)
@@ -269,6 +266,8 @@ class BatchCommander:
         self.toolbox.setDisabled(True)
         self.status.showMessage('Generating %s...' % (self.scriptfile))
         scriptfile = open(self.scriptfile, 'w')
+
+        self.start_time = datetime.now()
 
         if self.outputmode == MODE_TEX:
             scriptfile.write('\AtBeginDocument{\n')
@@ -386,7 +385,15 @@ class BatchCommander:
         if value or error_log_has_stuff:
             self.status.showMessage('Failed -- see the error.log file for details')
         else:
-            self.status.showMessage('Done!')
+            self.end_time = datetime.now()
+            elapsed = self.end_time - self.start_time
+            s = elapsed.seconds
+            if s > 5:
+                minutes, seconds = divmod(s, 60)
+                timestring = '%i:%i' % (minutes, seconds)
+            else:
+                timestring = '00:%i.%i' % (s, elapsed.microseconds)
+            self.status.showMessage('Done in ' + timestring + '.')
         self.run_button.setEnabled(True)
         self.toolbox.setEnabled(True)
 
