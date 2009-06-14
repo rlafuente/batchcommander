@@ -198,12 +198,6 @@ class BatchCommander:
         self.status.showMessage('Ready.')
         self.main_window.show()
 
-    def update_selector(self):
-        if self.dataset_selector:
-            self.dataset_selector.clear()
-            active_datasets = [dataset.name for dataset in self.datasets \
-                                    if dataset.active]
-            self.dataset_selector.addItems(active_datasets)
 
     def show_controls_window(self):
         '''Create and display the controls window.'''
@@ -211,11 +205,17 @@ class BatchCommander:
         self.controls_window = QtGui.QMainWindow()
 
         self.dataset_selector = QtGui.QComboBox(self.controls_window)
-        # self.dataset_selector.setGeometry(5, 5, 100, 30)
+        self.dataset_selector.setGeometry(5, 5, 150, 30)
         self.update_selector()
         self.controls_window.connect(self.dataset_selector,
                                      QtCore.SIGNAL('activated(int)'),
                                      self.on_selector_changed)
+
+        self.reload_button = QtGui.QPushButton('&Reload', self.controls_window)
+        self.reload_button.setGeometry(FIELDWIDTH - 80, 5, 100, 30)
+        self.controls_window.connect(self.reload_button,
+                                     QtCore.SIGNAL('clicked()'),
+                                     self.reload_current_dataset)
 
         self.current_dataset = self.datasets[0]
         self.toolbox = QtGui.QToolBox(self.controls_window)
@@ -225,9 +225,22 @@ class BatchCommander:
         self.set_immediate_mode(self.immediate_mode)
         self.controls_window.show()
         self.controls_window.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
-        self.toolbox.setGeometry(0,48,FIELDWIDTH+25,400)
+        self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
 
         sys.exit(self.app.exec_())
+
+    def update_selector(self):
+        if self.dataset_selector:
+            self.dataset_selector.clear()
+            active_datasets = [dataset.name for dataset in self.datasets \
+                                    if dataset.active]
+            self.dataset_selector.addItems(active_datasets)
+
+    def reload_current_dataset(self):
+        path = self.current_dataset.path
+        new_dataset = DataSet(path)
+        self.current_dataset = new_dataset  
+        self.update_toolbox()      
 
     def update_toolbox(self):
         # clear it
@@ -258,6 +271,10 @@ class BatchCommander:
             self.toolbox.addItem(scrollbox, section.name)
 
     def run(self):
+        # make sure input file exists
+        if not os.path.exists(self.inputfile):
+            self.status.showMessage("Input file doesn't exist!", 2000)
+            return
         self.run_button.setDisabled(True)
         self.toolbox.setDisabled(True)
         self.status.showMessage('Generating %s...' % (self.scriptfile))
