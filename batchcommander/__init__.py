@@ -93,9 +93,11 @@ class BatchCommander:
         main_frame = QtGui.QFrame()
 
         self.infile_textbox = QtGui.QLineEdit(main_frame)
-        self.infile_textbox.setText(self.inputfile)
         self.infile_textbox.setGeometry(100, 14, 200, 24)
+        self.infile_textbox.setText(self.inputfile)
         self.infile_textbox.setAlignment(QtCore.Qt.AlignRight)
+        self.infile_textbox.setDisabled(True)
+        # self.infile_textbox.repaint()
         infile_textlabel = QtGui.QLabel('Input file', main_frame)
         infile_textlabel.setGeometry(10, 14, 50, 24)
         infile_button = QtGui.QPushButton('...', main_frame)
@@ -322,14 +324,13 @@ class BatchCommander:
 
     def open_infile_dialog(self):
         pwd = os.getcwd()
-        # TODO: set parent
         filename = QtGui.QFileDialog.getOpenFileName(self.main_window,
                                      'Open input file',
                                      pwd,
                                      'TeX/LaTeX files (*.tex)')
         if not filename:
             return False
-        # this could be made without repeating set_input_file
+        # FIXME: this could be made without repeating set_input_file
         self.inputfile = str(filename)
         self.infile_textbox.setText(self.inputfile)
         directory = os.path.dirname(self.inputfile)
@@ -340,7 +341,6 @@ class BatchCommander:
 
     def open_scriptfile_dialog(self):
         pwd = os.getcwd()
-        # TODO: set parent
         filename = QtGui.QFileDialog.getSaveFileName(self.main_window, 'Save script file',
                                      pwd,
                                      'TeX/LaTeX style files (*.sty)')
@@ -351,7 +351,6 @@ class BatchCommander:
 
     def open_outfile_dialog(self):
         pwd = os.getcwd()
-        # TODO: set parent
         filename = QtGui.QFileDialog.getSaveFileName(self.main_window, 'Save output file',
                                      pwd,
                                      'PDF files (*.pdf)')

@@ -21,7 +21,12 @@ Make sure you have all these packages installed, otherwise you might
 run into cryptic error messages. You'll only need to type the following
 commands to get them up and running:
 
-  * Debian-based distros:
+  * Debian-based distros (Debian, Ubuntu):
 
-    sudo aptitude install python2.5 python-yaml python-qt4
-q
+    sudo aptitude install python-yaml python-qt4
+
+  * Fedora:
+
+    sudo yum (...)
+
+
