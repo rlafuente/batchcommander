@@ -27,7 +27,7 @@
 #   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''YAML datafile parser for Batch Commander'''
 
-import sys
+import sys, os
 import yaml
 from defaults import TOGGLE, COLOR, NUMBER, CHOICE
 
@@ -38,7 +38,7 @@ class DataSet:
     def __init__(self, filepath):
         self.name = os.path.basename(filepath)
         self.path = filepath
-        log.info('Loading dataset from ' + self.name + ' ...')
+        # log.info('Loading dataset from ' + self.name + ' ...')
         datadict = parse_datafile(self.path)
         self.sections = generate_fields(datadict)
         self.widget = None

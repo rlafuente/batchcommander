@@ -33,7 +33,7 @@ from datetime import datetime
 from PyQt4 import QtGui, QtCore
 
 from batchcommander.controls import create_control_from_field
-from batchcommander.parser import Dataset
+from batchcommander.parser import DataSet
 from batchcommander.defaults import *
 
 logging.basicConfig(level=logging.DEBUG)
@@ -154,28 +154,24 @@ class BatchCommander:
         list_container.setGeometry(10,10, 220, 120)
 
 
-        add_button = QtGui.QPushButton('+', data_frame)
-        add_button.setGeometry(235,10,20,20)
-        remove_button = QtGui.QPushButton('-', data_frame)
-        remove_button.setGeometry(235,35,20,20)
-#        self.main_window.connect(add_button,
-#                                 QtCore.SIGNAL('clicked()'),
-#                                 self.)
+        self.add_button = QtGui.QPushButton('+', data_frame)
+        self.add_button.setGeometry(235,10,20,20)
+        self.remove_button = QtGui.QPushButton('-', data_frame)
+        self.remove_button.setGeometry(235,35,20,20)
+        self.main_window.connect(self.add_button,
+                                 QtCore.SIGNAL('clicked()'),
+                                 self.add_dataset)
+        self.main_window.connect(self.remove_button,
+                                 QtCore.SIGNAL('clicked()'),
+                                 self.remove_dataset)                                 
+                                 
 
         self.data_list = QtGui.QListWidget(list_container)
         # list widget size is the same as the container
         self.data_list.setGeometry(list_container.contentsRect())
         self.data_list_items = []
         for dataset in self.datasets:
-            # show just the item name
-            name = dataset.name
-            it = QtGui.QListWidgetItem(name, self.data_list)
-            dataset.widget = it
-            it.setFlags(QtCore.Qt.ItemIsEnabled|
-                        QtCore.Qt.ItemIsUserCheckable|
-                        QtCore.Qt.ItemIsSelectable)
-            it.setCheckState(QtCore.Qt.Unchecked)
-            self.data_list_items.append(it)
+            self.add_list_item(dataset)
         self.data_list.connect(self.data_list,
                                QtCore.SIGNAL('itemChanged(QListWidgetItem *)'),
                                self.on_list_item_changed)
@@ -212,10 +208,10 @@ class BatchCommander:
     def show_controls_window(self):
         '''Create and display the controls window.'''
 
-        self.controls_window = QtGui.QFrame()
+        self.controls_window = QtGui.QMainWindow()
 
         self.dataset_selector = QtGui.QComboBox(self.controls_window)
-        ## self.dataset_selector.setGeometry(5, 5, 100, 30)
+        # self.dataset_selector.setGeometry(5, 5, 100, 30)
         self.update_selector()
         self.controls_window.connect(self.dataset_selector,
                                      QtCore.SIGNAL('activated(int)'),
@@ -229,7 +225,7 @@ class BatchCommander:
         self.set_immediate_mode(self.immediate_mode)
         self.controls_window.show()
         self.controls_window.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
-        self.toolbox.setGeometry(0,24,FIELDWIDTH+25,400)
+        self.toolbox.setGeometry(0,48,FIELDWIDTH+25,400)
 
         sys.exit(self.app.exec_())
 
@@ -397,43 +393,74 @@ class BatchCommander:
         self.run_button.setEnabled(True)
         self.toolbox.setEnabled(True)
 
-    def add_dataset(self, filepath):
-        dataset = DataSet(filepath)
-        self.datasets.append(dataset)
-        # TODO: refresh controls window
+    def add_list_item(self, dataset):
+        name = dataset.name
+        it = QtGui.QListWidgetItem(name, self.data_list)
+        dataset.widget = it
+        it.setFlags(QtCore.Qt.ItemIsEnabled|
+                    QtCore.Qt.ItemIsUserCheckable|
+                    QtCore.Qt.ItemIsSelectable)
+        it.setCheckState(QtCore.Qt.Unchecked)
+        self.data_list_items.append(it)
 
-    def remove_dataset(self, dataset):
-        for ds in self.datasets:
-            if ds.name == dataset.name:
-                del ds
-        ## del self.datasets[dataset]
-        # TODO: refresh controls window
-        # check if it's the last
-        # if it is, grey out the remove box
+    def add_dataset(self):
+        pwd = os.getcwd()
+        # TODO: set parent
+        filename = QtGui.QFileDialog.getOpenFileName(self.main_window,
+                                     'Open input file',
+                                     pwd,
+                                     'Batch Commander data files (*.data)')
+        if not filename:
+            return False
+        dataset = DataSet(str(filename))
+        self.datasets.append(dataset)
+        self.add_list_item(dataset)
+        self.remove_button.setEnabled(True)
+        
+    def remove_dataset(self):
+        selected_item = self.data_list.currentItem() 
+        selected_row = self.data_list.currentRow()  
+        for dataset in self.datasets:
+            if dataset.name == selected_item.text():
+                if dataset.active:
+                    self.disable_dataset(dataset)
+                    self.data_list.takeItem(selected_row)    
+                self.datasets.pop(self.datasets.index(dataset))
+                self.data_list_items.pop(self.data_list_items.index(selected_item))
+                self.data_list.takeItem(selected_row)
+                print 'dataset disabled'
+                break
+        if len(self.datasets) == 1:
+            self.remove_button.setDisabled(True)        
 
     def enable_dataset(self, dataset):
         log.debug('Enabling dataset ' + dataset.name)
         dataset.active = True
+        
         self.update_selector()
+        
+        if self.dataset_selector:
+            index = self.dataset_selector.findText(self.current_dataset.name)
+            self.dataset_selector.setCurrentIndex(index)
 
     def disable_dataset(self, dataset):
-        # do nothing if it's the last active one
         dataset_count = 0
         for ds in self.datasets:
             if ds.active:
                 dataset_count += 1
+        # is it the last active one?
         if dataset_count < 2:
             # keep the item checked
             for item in self.data_list_items:
                 if item.text() == dataset.name:
                     item.setCheckState(QtCore.Qt.Checked)
+            self.status.showMessage('At least one dataset must be selected.', 2500)
             return
         # otherwise, let's disable it
         log.debug('Disabling dataset ' + dataset.name)
         dataset.active = False
+               
         if dataset == self.current_dataset:
-            # the combobox resets to the first item, so we update current dataset
-            # to that. Not elegant, but working so far.
             for dataset in self.datasets:
                 if dataset.active:
                     self.current_dataset = dataset
