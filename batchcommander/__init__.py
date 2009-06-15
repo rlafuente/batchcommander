@@ -81,6 +81,7 @@ class BatchCommander:
         self.app = QtGui.QApplication(sys.argv)
         self.show_main_window()
         self.show_controls_window()
+        sys.exit(self.app.exec_())
 
     def show_main_window(self):
         '''Create and display the main interface window.'''
@@ -93,11 +94,10 @@ class BatchCommander:
         main_frame = QtGui.QFrame()
 
         self.infile_textbox = QtGui.QLineEdit(main_frame)
-        self.infile_textbox.setGeometry(100, 14, 200, 24)
         self.infile_textbox.setText(self.inputfile)
+        self.infile_textbox.setGeometry(100, 14, 200, 24)
         self.infile_textbox.setAlignment(QtCore.Qt.AlignRight)
         self.infile_textbox.setDisabled(True)
-        # self.infile_textbox.repaint()
         infile_textlabel = QtGui.QLabel('Input file', main_frame)
         infile_textlabel.setGeometry(10, 14, 50, 24)
         infile_button = QtGui.QPushButton('...', main_frame)
@@ -110,8 +110,8 @@ class BatchCommander:
                            self.open_infile_dialog)
 
         self.scriptfile_textbox = QtGui.QLineEdit(main_frame)
-        self.scriptfile_textbox.setGeometry(100, 40, 200, 24)
         self.scriptfile_textbox.setText(self.scriptfile)
+        self.scriptfile_textbox.setGeometry(100, 40, 200, 24)
         self.scriptfile_textbox.setAlignment(QtCore.Qt.AlignRight)
         scriptfile_textlabel = QtGui.QLabel('Script file', main_frame)
         scriptfile_textlabel.setGeometry(10, 40, 50, 24)
@@ -125,8 +125,8 @@ class BatchCommander:
                            self.open_scriptfile_dialog)
 
         self.outfile_textbox = QtGui.QLineEdit(main_frame)
+        self.outfile_textbox.setText('test')
         self.outfile_textbox.setGeometry(100, 66, 200, 24)
-        self.outfile_textbox.setText(self.outputfile)
         self.outfile_textbox.setAlignment(QtCore.Qt.AlignRight)
         outfile_textlabel = QtGui.QLabel('Output file', main_frame)
         outfile_textlabel.setGeometry(10, 66, 50, 24)
@@ -231,8 +231,6 @@ class BatchCommander:
         self.controls_window.show()
         self.controls_window.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
         self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
-
-        sys.exit(self.app.exec_())
 
     def update_selector(self):
         if self.dataset_selector:

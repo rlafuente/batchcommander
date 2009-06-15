@@ -2,9 +2,15 @@ Introduction
 ============
 
 
+License
+=======
 
-Installation
-============
+Batch Commander is Copyright 2005-2009 Kaveh Bazargan and Ricardo Lafuente,
+and is licensed under the GPL (version 3 or later). See the COPYING file
+for the full license text.
+
+Installing in GNU/Linux
+=======================
 
 Dependencies
 ------------
@@ -17,6 +23,8 @@ numbers are the minimum version required for each package.
   * PyQt 4.3
   * PyYAML 3.05
 
+  * and any distribution of TeX/LaTeX that supports the pdftex command.
+
 Make sure you have all these packages installed, otherwise you might
 run into cryptic error messages. You'll only need to type the following
 commands to get them up and running:
@@ -28,5 +36,22 @@ commands to get them up and running:
   * Fedora:
 
     sudo yum (...)
+
+Installing in Mac OS X
+======================
+
+1. Get the files
+
+Known Bugs
+==========
+
+Artifacts appear on text boxes under Ubuntu Jaunty
+--------------------------------------------------
+This bug seems to be caused by Qt 4.5.0. Not a lot can be done regarding
+this, other than using Ubuntu Intrepid or waiting for Ubuntu Karmic.
+
+You want to try your hand at manually installing the Qt 4.5.1 packages, or
+else downgrading to Qt 4.4.3 (please contact r(a)sollec.org if you do
+succeed with this!).
 
 
