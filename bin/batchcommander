@@ -27,8 +27,42 @@
 #   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 #   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+'''Batch Commander console launcher'''
+
+import os
+from batchcommander import BatchCommander
 
 if __name__ == '__main__':
-    from batchcommander import BatchCommander
-    bc = BatchCommander()
+    homedir = os.path.expanduser("~")
+    
+    # TODO: test for different OS's and adjust accordingly
+    localdir = os.path.join(homedir, '.batchcommander/')
+    datadir = os.path.join(localdir, 'datafiles/')
+    examplesdir = os.path.join(localdir, 'examples/')
+
+    DEFAULT_INPUTFILE = os.path.join(examplesdir, 'sarovar.tex')
+    DEFAULT_SCRIPTFILE = os.path.join(examplesdir, 'river_valley.sty')
+    DEFAULT_OUTPUTFILE = os.path.join(homedir, 'output.pdf')
+    # FIXME: the pdf output name is not applied, outputfile not considered
+    DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s %(output_file)s'
+    DEFAULT_IMMEDIATE_MODE = False
+    
+    DEFAULT_DATAFILES_DIR = datadir
+    DEFAULT_DATAFILES = []
+
+    for result in os.walk(DEFAULT_DATAFILES_DIR):
+        directory, dirs, files = result
+        for filename in files:
+            if os.path.splitext(filename)[1] == '.data':
+                filepath = os.path.join(directory, filename)
+                DEFAULT_DATAFILES.append(filepath)
+    
+    bc = BatchCommander(datafiles=DEFAULT_DATAFILES,
+                        inputfile=DEFAULT_INPUTFILE,
+                        scriptfile=DEFAULT_SCRIPTFILE,
+                        outputfile=DEFAULT_OUTPUTFILE,
+                        command=DEFAULT_COMMAND,
+                        immediate_mode=DEFAULT_IMMEDIATE_MODE,
+                        output_mode='tex',
+                        )
     bc.show_ui()
