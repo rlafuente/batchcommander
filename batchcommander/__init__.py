@@ -43,20 +43,13 @@ log = logging.getLogger("BatchCommander")
 class BatchCommander:
     '''Batch Commander UI runner'''
     def __init__(self,
-                 datafiles_dir=DEFAULT_DATAFILES_DIR,
-                 inputfile=DEFAULT_INPUTFILE,
-                 scriptfile=DEFAULT_SCRIPTFILE,
-                 outputfile=DEFAULT_OUTPUTFILE,
-                 command=DEFAULT_COMMAND,
-                 immediate_mode=DEFAULT_IMMEDIATE_MODE,
+                 datafiles=None,
+                 inputfile=None,
+                 scriptfile=None,
+                 outputfile=None,
+                 command=None,
+                 immediate_mode=None,
                  output_mode=MODE_TEX):
-        datafiles = []
-        for result in os.walk(datafiles_dir):
-            directory, dirs, files = result
-            for filename in files:
-                if os.path.splitext(filename)[1] == '.data':
-                    filepath = os.path.join(directory, filename)
-                    datafiles.append(filepath)
         self.datasets = []
         for path in datafiles:
             self.datasets.append(DataSet(path))
@@ -82,11 +75,11 @@ class BatchCommander:
         self.app = QtGui.QApplication(sys.argv)
         self.show_main_window()
         self.show_controls_window()
-        sys.exit(self.app.exec_())
 
     def show_main_window(self):
         '''Create and display the main interface window.'''
         self.main_window = QtGui.QMainWindow()
+        self.main_window.setWindowTitle('Batch Commander: Main')
         self.tab_bar = QtGui.QTabWidget(self.main_window)
         self.status = self.main_window.statusBar()
         
@@ -100,9 +93,9 @@ class BatchCommander:
         self.infile_textbox.setAlignment(QtCore.Qt.AlignRight)
         self.infile_textbox.setDisabled(True)
         infile_textlabel = QtGui.QLabel('Input file', main_frame)
-        infile_textlabel.setGeometry(10, 14, 50, 24)
+        infile_textlabel.setGeometry(*dim_infile_textlabel)
         infile_button = QtGui.QPushButton('...', main_frame)
-        infile_button.setGeometry(310, 14, 30, 24)
+        infile_button.setGeometry(*dim_infile_button)
         main_frame.connect(self.infile_textbox,
                            QtCore.SIGNAL('editingFinished()'),
                            self.set_input_file)
@@ -115,7 +108,7 @@ class BatchCommander:
         self.scriptfile_textbox.setGeometry(100, 40, 200, 24)
         self.scriptfile_textbox.setAlignment(QtCore.Qt.AlignRight)
         scriptfile_textlabel = QtGui.QLabel('Script file', main_frame)
-        scriptfile_textlabel.setGeometry(10, 40, 50, 24)
+        scriptfile_textlabel.setGeometry(10, 40, 90, 24)
         scriptfile_button = QtGui.QPushButton('...', main_frame)
         scriptfile_button.setGeometry(310, 40, 30, 24)
         main_frame.connect(self.scriptfile_textbox,
@@ -126,11 +119,11 @@ class BatchCommander:
                            self.open_scriptfile_dialog)
 
         self.outfile_textbox = QtGui.QLineEdit(main_frame)
-        self.outfile_textbox.setText(self.outputfile)
         self.outfile_textbox.setGeometry(100, 66, 200, 24)
+        self.outfile_textbox.setText(self.outputfile)
         self.outfile_textbox.setAlignment(QtCore.Qt.AlignRight)
         outfile_textlabel = QtGui.QLabel('Output file', main_frame)
-        outfile_textlabel.setGeometry(10, 66, 50, 24)
+        outfile_textlabel.setGeometry(10, 66, 90, 24)
         outfile_button = QtGui.QPushButton('...', main_frame)
         outfile_button.setGeometry(310, 66, 30, 24)
         main_frame.connect(self.outfile_textbox,
@@ -141,12 +134,12 @@ class BatchCommander:
                            self.open_outfile_dialog)
 
         self.run_button = QtGui.QPushButton('&Run', main_frame)
-        self.run_button.setGeometry(190, 100, 100, 30)
+        self.run_button.setGeometry(200, 92, 100, 30)
         main_frame.connect(self.run_button,
                            QtCore.SIGNAL('clicked()'),
                            self.run)
         immediate_box = QtGui.QCheckBox('&Immediate mode', main_frame)
-        immediate_box.setGeometry(10, 100, 100, 30)
+        immediate_box.setGeometry(10, 92, 150, 30)
         immediate_box.setChecked(self.immediate_mode)
         main_frame.connect(immediate_box,
                            QtCore.SIGNAL('stateChanged(int)'),
@@ -195,9 +188,9 @@ class BatchCommander:
 
         ### wrap up main window ###
 
-        tab_bar_height = MAINBOXHEIGHT - self.status.height()
+        tab_bar_height = MAINBOXHEIGHT - self.status.height() - 20
         self.tab_bar.setGeometry(20, 20, MAINBOXWIDTH, tab_bar_height)
-        self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT+40)
+        self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT)
         self.main_window.connect(self.process,
                                  QtCore.SIGNAL('finished(int)'),
                                  self.on_process_finished)
@@ -209,6 +202,7 @@ class BatchCommander:
         '''Create and display the controls window.'''
 
         self.controls_window = QtGui.QMainWindow()
+        self.controls_window.setWindowTitle('Batch Commander: Controls')
 
         self.dataset_selector = QtGui.QComboBox(self.controls_window)
         self.dataset_selector.setGeometry(5, 5, 150, 30)
@@ -223,7 +217,11 @@ class BatchCommander:
                                      QtCore.SIGNAL('clicked()'),
                                      self.reload_current_dataset)
 
-        self.current_dataset = self.datasets[0]
+        # Check if there are any datafiles
+        try:
+            self.current_dataset = self.datasets[0]
+        except IndexError:
+            self.current_dataset = None
         self.toolbox = QtGui.QToolBox(self.controls_window)
 
         self.update_toolbox()
@@ -245,8 +243,8 @@ class BatchCommander:
     def reload_current_dataset(self):
         path = self.current_dataset.path
         new_dataset = DataSet(path)
-        self.current_dataset = new_dataset  
-        self.update_toolbox()      
+        self.current_dataset = new_dataset
+        self.update_toolbox()
 
     def update_toolbox(self):
         # clear it
@@ -304,11 +302,10 @@ class BatchCommander:
                         for section in dataset.sections:
                             section.output_pythonvar(scriptfile)
 
-        scriptfile.close()
-        self.status.showMessage('Outputting %s...' % (self.outputfile))
-        self.process.start(self.command % {'input_file': self.inputfile,
+            scriptfile.close()
+            self.status.showMessage('Outputting %s...' % (self.outputfile))
+            self.process.start(self.command % {'input_file': self.inputfile,
                                            'output_file': self.outputfile})
-                                           
         except:
             self.run_button.setEnabled(True)
             self.toolbox.setEnabled(True)
@@ -404,8 +401,11 @@ class BatchCommander:
     def on_process_finished(self, value):
         # error codes from QProcess are not to be trusted, so we also
         # check if the log file has stuff in it
-        log = open(self.error_log_filename, 'r')
-        error_log_has_stuff = bool(log.read())
+        try:
+            log = open(self.error_log_filename, 'r')
+            error_log_has_stuff = bool(log.read())
+        except IOError:
+            error_log_has_stuff = False
         if value or error_log_has_stuff:
             self.status.showMessage('Failed -- see the error.log file for details')
         else:

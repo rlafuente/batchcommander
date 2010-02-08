@@ -12,6 +12,10 @@ MODE_PYTHON = 'python'
 
 MAINBOXWIDTH = 370
 MAINBOXHEIGHT = 200
-FIELDHEIGHT = 36
-FIELDWIDTH = 375
+FIELDHEIGHT = 46
+FIELDWIDTH = 325
 
+dim_infile_textbox = [100, 14, 200, 24]
+dim_infile_textlabel = [10, 14, 90, 24]
+dim_infile_button = [310, 14, 30, 24]
+       

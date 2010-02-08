@@ -33,12 +33,20 @@ import os
 from batchcommander import BatchCommander
 
 if __name__ == '__main__':
-    homedir = os.path.expanduser("~")
     
-    # TODO: test for different OS's and adjust accordingly
-    localdir = os.path.join(homedir, '.batchcommander/')
-    datadir = os.path.join(localdir, 'datafiles/')
-    examplesdir = os.path.join(localdir, 'examples/')
+    import sys
+    if sys.platform == 'linux2':
+        homedir = os.path.expanduser("~")
+        localdir = os.path.join(homedir, '.batchcommander/')
+        datadir = os.path.join(localdir, 'datafiles/')
+        examplesdir = os.path.join(localdir, 'examples/')
+    elif sys.platform == 'darwin':
+        homedir = os.path.expanduser("~")
+        localdir = os.path.join(homedir, 'Documents', 'BatchCommander/')
+        datadir = os.path.join(localdir, 'DataFiles/')
+        examplesdir = os.path.join(localdir, 'Examples/')
+        # have the files be output to the desktop in OSX
+        homedir = os.path.join(homedir, 'Desktop/')
 
     DEFAULT_INPUTFILE = os.path.join(examplesdir, 'sarovar.tex')
     DEFAULT_SCRIPTFILE = os.path.join(examplesdir, 'river_valley.sty')
@@ -56,7 +64,7 @@ if __name__ == '__main__':
             if os.path.splitext(filename)[1] == '.data':
                 filepath = os.path.join(directory, filename)
                 DEFAULT_DATAFILES.append(filepath)
-    
+
     bc = BatchCommander(datafiles=DEFAULT_DATAFILES,
                         inputfile=DEFAULT_INPUTFILE,
                         scriptfile=DEFAULT_SCRIPTFILE,

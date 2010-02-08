@@ -3,11 +3,11 @@ import os
 
 setup(
       name='Batch Commander',
-      app=['bin/batchcommander.py'],
+      app=['bin/bcommander.py'],
       options={
         "py2app": {
           'argv_emulation': True,
-          'includes':
+          'includes': [
             "sip",
             "PyQt4._qt",
             "yaml",

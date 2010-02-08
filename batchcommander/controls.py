@@ -50,14 +50,14 @@ class Control(QtGui.QWidget):
             self.longname = self.field.longname
 
         self.hboxwidget = QtGui.QWidget(self)
-        self.hboxwidget.setGeometry(QtCore.QRect(150, 0, 350, self.height))
+        self.hboxwidget.setGeometry(QtCore.QRect(110, 0, 220, self.height))
         self.hbox = QtGui.QHBoxLayout(self.hboxwidget)
 
         self.label = QtGui.QLabel(self.longname, self)
         self.label.setGeometry(QtCore.QRect(0, 0, self.width, self.height))
         self.label.setAlignment(QtCore.Qt.AlignRight|
                                 QtCore.Qt.AlignVCenter)
-        self.label.setGeometry(0, 0, 150, self.height)
+        self.label.setGeometry(0, 0, 110, self.height)
         self.label.setFont(QtGui.QFont('Lucida Grande', 10))
 
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, 
@@ -198,7 +198,6 @@ class NumberControl(Control):
 
         # set widgets to initial value before connecting
         self.set_value(self.value)
-        
         # and now connect the signals
         self.connect(self.slider, 
                      QtCore.SIGNAL('sliderReleased()'), 
