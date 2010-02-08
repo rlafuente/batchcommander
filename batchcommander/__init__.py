@@ -39,16 +39,24 @@ from batchcommander.defaults import *
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("BatchCommander")
 
+
 class BatchCommander:
     '''Batch Commander UI runner'''
     def __init__(self,
-                 datafiles=[],
-                 inputfile=None,
-                 scriptfile=None,
-                 outputfile=None,
-                 command=None,
-                 immediate_mode=False,
+                 datafiles_dir=DEFAULT_DATAFILES_DIR,
+                 inputfile=DEFAULT_INPUTFILE,
+                 scriptfile=DEFAULT_SCRIPTFILE,
+                 outputfile=DEFAULT_OUTPUTFILE,
+                 command=DEFAULT_COMMAND,
+                 immediate_mode=DEFAULT_IMMEDIATE_MODE,
                  output_mode=MODE_TEX):
+        datafiles = []
+        for result in os.walk(datafiles_dir):
+            directory, dirs, files = result
+            for filename in files:
+                if os.path.splitext(filename)[1] == '.data':
+                    filepath = os.path.join(directory, filename)
+                    datafiles.append(filepath)
         self.datasets = []
         for path in datafiles:
             self.datasets.append(DataSet(path))
@@ -188,8 +196,8 @@ class BatchCommander:
         ### wrap up main window ###
 
         tab_bar_height = MAINBOXHEIGHT - self.status.height()
-        self.tab_bar.setGeometry(0, 0, MAINBOXWIDTH, tab_bar_height)
-        self.main_window.setGeometry(0, 0, MAINBOXWIDTH, MAINBOXHEIGHT)
+        self.tab_bar.setGeometry(20, 20, MAINBOXWIDTH, tab_bar_height)
+        self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT+40)
         self.main_window.connect(self.process,
                                  QtCore.SIGNAL('finished(int)'),
                                  self.on_process_finished)
@@ -221,9 +229,11 @@ class BatchCommander:
         self.update_toolbox()
 
         self.set_immediate_mode(self.immediate_mode)
-        self.controls_window.show()
-        self.controls_window.setGeometry(0,MAINBOXHEIGHT,FIELDWIDTH+25,400)
         self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
+        self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,FIELDWIDTH+25,450)
+        self.controls_window.show()
+
+        sys.exit(self.app.exec_())
 
     def update_selector(self):
         if self.dataset_selector:
@@ -408,12 +418,6 @@ class BatchCommander:
             else:
                 timestring = '00:%i.%i' % (s, elapsed.microseconds)
             self.status.showMessage('Done in ' + timestring + '.')
-            # rename the output file, since pdftex insists on keeping the input
-            # file name
-            filename = os.path.splitext(str(self.outputfile))[0]
-            outname = filename + '.pdf'
-            print outname
-
         self.run_button.setEnabled(True)
         self.toolbox.setEnabled(True)
 

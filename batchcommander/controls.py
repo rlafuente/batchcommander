@@ -34,7 +34,7 @@ from defaults import UNITS, COLOR, TOGGLE, NUMBER, CHOICE
 
 class Control(QtGui.QWidget):
     '''A Control is a GUI representation of a Field instance.'''
-    def __init__(self, field, parent=None, width=250, height=36):
+    def __init__(self, field, parent=None, width=250, height=56):
         QtGui.QWidget.__init__(self, parent)
 
         self.width = width
@@ -50,7 +50,7 @@ class Control(QtGui.QWidget):
             self.longname = self.field.longname
 
         self.hboxwidget = QtGui.QWidget(self)
-        self.hboxwidget.setGeometry(QtCore.QRect(150, 0, 225, self.height))
+        self.hboxwidget.setGeometry(QtCore.QRect(150, 0, 350, self.height))
         self.hbox = QtGui.QHBoxLayout(self.hboxwidget)
 
         self.label = QtGui.QLabel(self.longname, self)
@@ -58,6 +58,7 @@ class Control(QtGui.QWidget):
         self.label.setAlignment(QtCore.Qt.AlignRight|
                                 QtCore.Qt.AlignVCenter)
         self.label.setGeometry(0, 0, 150, self.height)
+        self.label.setFont(QtGui.QFont('Lucida Grande', 10))
 
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, 
                                              QtGui.QSizePolicy.Preferred))
