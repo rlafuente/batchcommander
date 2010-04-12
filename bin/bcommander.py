@@ -50,7 +50,7 @@ if __name__ == '__main__':
     DEFAULT_SCRIPTFILE = os.path.join(examplesdir, 'river_valley.sty')
     DEFAULT_OUTPUTFILE = os.path.join(homedir, 'output.pdf')
     # FIXME: the pdf output name is not applied, outputfile not considered
-    DEFAULT_COMMAND = 'pdftex -halt-on-error %(input_file)s %(output_file)s'
+    DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s'
     DEFAULT_IMMEDIATE_MODE = False
     
     DEFAULT_DATAFILES_DIR = datadir
