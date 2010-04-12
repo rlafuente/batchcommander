@@ -162,8 +162,7 @@ class BatchCommander:
                                  self.add_dataset)
         self.main_window.connect(self.remove_button,
                                  QtCore.SIGNAL('clicked()'),
-                                 self.remove_dataset)                                 
-                                 
+                                 self.remove_dataset)
 
         self.data_list = QtGui.QListWidget(list_container)
         # list widget size is the same as the container
@@ -289,6 +288,7 @@ class BatchCommander:
             self.start_time = datetime.now()
 
             if self.outputmode == MODE_TEX:
+                # TODO: check if TeX is installed
                 scriptfile.write('\AtBeginDocument{\n')
                 for dataset in self.datasets:
                     if dataset.active:
@@ -306,6 +306,10 @@ class BatchCommander:
             self.status.showMessage('Outputting %s...' % (self.outputfile))
             self.process.start(self.command % {'input_file': self.inputfile,
                                            'output_file': self.outputfile})
+        except NotInstalledError:
+            self.run_button.setEnabled(True)
+            self.toolbox.setEnabled(True)
+            self.status.showMessage('Failed :(')
         except:
             self.run_button.setEnabled(True)
             self.toolbox.setEnabled(True)
