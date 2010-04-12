@@ -67,14 +67,19 @@ class BatchCommander:
         self.process.setStandardErrorFile(self.error_log_filename)
         self.process.setStandardOutputFile(self.output_log_filename)
 
+        self.app = QtGui.QApplication(sys.argv)
+
         # we need this here for now, otherwise it borks
         # this will refer to the combobox in the control window
         self.dataset_selector = None
 
+        # check for PDFTeX before anything else
+        self.check_for_tex()
+
     def show_ui(self):
-        self.app = QtGui.QApplication(sys.argv)
         self.show_main_window()
         self.show_controls_window()
+        sys.exit(self.app.exec_())
 
     def show_main_window(self):
         '''Create and display the main interface window.'''
@@ -230,7 +235,6 @@ class BatchCommander:
         self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,FIELDWIDTH+25,450)
         self.controls_window.show()
 
-        sys.exit(self.app.exec_())
 
     def update_selector(self):
         if self.dataset_selector:
@@ -505,6 +509,28 @@ class BatchCommander:
             if name == dataset.name:
                 return dataset
         return None
+
+    def check_for_tex(self):
+        import subprocess
+
+        retcode = subprocess.call('tex -version', shell=True)
+        if retcode:
+            self.show_error_window('TeX is not installed.', 
+                                   'Batch Commander requires TeX to run.')
+            sys.exit()
+
+        retcode = subprocess.call('pdftex -version', shell=True)
+        if retcode:
+            self.show_error_window('PDFTeX is not installed.', 
+                                   'Batch Commander requires PDFTeX to run.')
+            sys.exit()
+
+    def show_error_window(self, text, infotext):
+        msgbox = QtGui.QMessageBox()
+        msgbox.setText(text)
+        msgbox.setInformativeText(infotext)
+        msgbox.setIcon(QtGui.QMessageBox.Critical)
+        msgbox.exec_()
 
 if __name__ == '__main__':
     bc = BatchCommander(datafile=sys.argv[1])

@@ -1,5 +1,5 @@
 from distutils.core import setup
-import sys, os
+import os
 # import py2exe
 
 # windows install is not yet ready, but this is here for when i code the rest
@@ -28,7 +28,7 @@ setup(name="batchcommander",
       license="GNU General Public License (GPL)",
       packages=['batchcommander'],
       data_files = datafiles,
-      scripts=["bin/batchcommander"],
+      scripts=["bin/bcommander.py"],
 #      windows=[{"script": "bin/batchcommander"}],
 #      options={"py2exe": {"skip_archive": True, "includes": ["sip"]}}
       )
