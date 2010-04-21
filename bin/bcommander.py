@@ -49,8 +49,11 @@ if __name__ == '__main__':
     DEFAULT_INPUTFILE = os.path.join(examplesdir, 'sarovar.tex')
     DEFAULT_SCRIPTFILE = os.path.join(examplesdir, 'river_valley.sty')
     DEFAULT_OUTPUTFILE = os.path.join(homedir, 'output.pdf')
-    # FIXME: the pdf output name is not applied, outputfile not considered
-    DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s'
+    # MacTeX has a specific place for the TeX binaries
+    if sys.platform == 'darwin':
+        DEFAULT_COMMAND = '/usr/texbin/pdflatex -halt-on-error %(input_file)s'
+    else:
+        DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s'
     DEFAULT_IMMEDIATE_MODE = False
     
     DEFAULT_DATAFILES_DIR = datadir

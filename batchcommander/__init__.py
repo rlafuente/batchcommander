@@ -295,7 +295,6 @@ class BatchCommander:
             self.start_time = datetime.now()
 
             if self.outputmode == MODE_TEX:
-                # TODO: check if TeX is installed
                 scriptfile.write('\AtBeginDocument{\n')
                 for dataset in self.datasets:
                     if dataset.active:
@@ -433,15 +432,22 @@ class BatchCommander:
             finally:
                 fhandle.close()
 
+            # on OSX, we open Preview, and if it's already open we poke it for auto-reloading
+            if sys.platform == 'darwin':
+                if sys.version_info < (2,6):
+                    os.system('open %s' % self.outputfile)
+                else:
+                    import subprocess
+                    subprocess.call('open %s' % self.outputfile, shell=True)
 
             self.end_time = datetime.now()
             elapsed = self.end_time - self.start_time
             s = elapsed.seconds
             if s > 5:
                 minutes, seconds = divmod(s, 60)
-                timestring = '%01d:%01d' % (minutes, seconds)
+                timestring = '%02d:%02d' % (minutes, seconds)
             else:
-                timestring = '00:%01d.%d' % (s, elapsed.microseconds)
+                timestring = '00:%02d.%d' % (s, elapsed.microseconds)
             self.status.showMessage('Done in ' + timestring + '.')
         self.run_button.setEnabled(True)
         self.toolbox.setEnabled(True)
@@ -530,13 +536,29 @@ class BatchCommander:
     def check_for_tex(self):
         import subprocess
 
-        retcode = subprocess.call('tex -version', shell=True)
+        # MacTeX places the TeX binaries somewhere else
+        if sys.platform == 'darwin':
+            tex_cmd = '/usr/texbin/tex -version'
+            pdflatex_cmd = '/usr/texbin/pdflatex -version'
+        else:
+            tex_cmd = 'tex -version'
+            pdflatex_cmd = 'pdflatex -version'
+
+        # bug 1068268 in Python prevents us from using subprocess.call
+        # in versions under 2.6
+        if sys.version_info < (2,6):
+            retcode = os.system(tex_cmd)
+        else:
+            retcode = subprocess.call(tex_cmd, shell=True)
         if retcode:
             self.show_error_window('TeX is not installed.', 
                                    'Batch Commander requires TeX to run.')
             sys.exit()
 
-        retcode = subprocess.call('pdflatex -version', shell=True)
+        if sys.version_info < (2,6):
+            retcode = os.system(pdflatex_cmd)
+        else:
+            retcode = subprocess.call(pdflatex_cmd, shell=True)
         if retcode:
             self.show_error_window('PDFLaTeX is not installed.', 
                                    'Batch Commander requires PDFLaTeX to run.')
