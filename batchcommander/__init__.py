@@ -89,7 +89,7 @@ class BatchCommander:
         '''Create and display the main interface window.'''
         self.main_window = QtGui.QMainWindow()
         self.main_window.setWindowTitle('Batch Commander: Main')
-        self.tab_bar = QtGui.QTabWidget(self.main_window)
+        self.tab_bar = QtGui.QTabWidget()
         self.status = self.main_window.statusBar()
         
         ### Main tab ###
@@ -190,19 +190,14 @@ class BatchCommander:
         self.tab_bar.addTab(data_frame, '&Data files')
 
         ### Options tab ###
-
         options_frame = QtGui.QFrame()
         self.tab_bar.addTab(options_frame, '&Options')
 
         ### wrap up main window ###
-
-        tab_bar_height = MAINBOXHEIGHT - self.status.height() - 20
-        self.tab_bar.setGeometry(20, 20, MAINBOXWIDTH, tab_bar_height)
         self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT)
-        self.main_window.connect(self.process,
-                                 QtCore.SIGNAL('finished(int)'),
-                                 self.on_process_finished)
+        self.main_window.connect(self.process, QtCore.SIGNAL('finished(int)'), self.on_process_finished)
         self.status.showMessage('Ready.')
+        self.main_window.setCentralWidget(self.tab_bar)
         self.main_window.show()
 
 
@@ -212,33 +207,40 @@ class BatchCommander:
         self.controls_window = QtGui.QMainWindow()
         self.controls_window.setWindowTitle('Batch Commander: Controls')
 
-        self.dataset_selector = QtGui.QComboBox(self.controls_window)
-        self.dataset_selector.setGeometry(5, 5, 150, 30)
+        self.toolbar = QtGui.QToolBar(self.controls_window)
+        self.dataset_selector = QtGui.QComboBox()
+        # self.dataset_selector.setGeometry(5, 5, 150, 30)
         self.update_selector()
         self.controls_window.connect(self.dataset_selector,
                                      QtCore.SIGNAL('activated(int)'),
                                      self.on_selector_changed)
 
-        self.reload_button = QtGui.QPushButton('&Reload', self.controls_window)
+        self.reload_button = QtGui.QPushButton('&Reload')
         self.reload_button.setGeometry(FIELDWIDTH - 80, 5, 100, 30)
         self.controls_window.connect(self.reload_button,
                                      QtCore.SIGNAL('clicked()'),
                                      self.reload_current_dataset)
+
+        self.toolbar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
+        self.toolbar.addWidget(self.dataset_selector)
+        self.toolbar.addWidget(self.reload_button)
+        self.toolbar.setFloatable(False)
+        self.toolbar.setMovable(False)
 
         # Check if there are any datafiles
         try:
             self.current_dataset = self.datasets[0]
         except IndexError:
             self.current_dataset = None
-        self.toolbox = QtGui.QToolBox(self.controls_window)
-
+        self.toolbox = QtGui.QToolBox()
         self.update_toolbox()
 
         self.set_immediate_mode(self.immediate_mode)
-        self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
+        # self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
         self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,FIELDWIDTH+25,450)
+        self.controls_window.addToolBar(self.toolbar)
+        self.controls_window.setCentralWidget(self.toolbox)
         self.controls_window.show()
-
 
     def update_selector(self):
         if self.dataset_selector:
