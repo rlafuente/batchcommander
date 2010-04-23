@@ -40,7 +40,6 @@ from batchcommander.defaults import *
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("BatchCommander")
 
-
 class BatchCommander:
     '''Batch Commander UI runner'''
     def __init__(self,
@@ -96,15 +95,19 @@ class BatchCommander:
 
         main_frame = QtGui.QFrame()
 
+        tooltip_text = 'The location of the source TeX file used\nto create the output.'
         self.infile_textbox = QtGui.QLineEdit(main_frame)
         self.infile_textbox.setText(self.inputfile)
         self.infile_textbox.setGeometry(100, 14, 200, 24)
         self.infile_textbox.setAlignment(QtCore.Qt.AlignRight)
         self.infile_textbox.setDisabled(True)
+        self.infile_textbox.setToolTip(tooltip_text)
         infile_textlabel = QtGui.QLabel('Input file', main_frame)
         infile_textlabel.setGeometry(*dim_infile_textlabel)
+        infile_textlabel.setToolTip(tooltip_text)
         infile_button = QtGui.QPushButton('...', main_frame)
         infile_button.setGeometry(*dim_infile_button)
+        infile_button.setToolTip(tooltip_text)
         main_frame.connect(self.infile_textbox,
                            QtCore.SIGNAL('editingFinished()'),
                            self.set_input_file)
@@ -112,14 +115,18 @@ class BatchCommander:
                            QtCore.SIGNAL('clicked()'),
                            self.open_infile_dialog)
 
+        tooltip_text = 'The location of the style file that will\nbe created by Batch Commander. Note that\nthe source document must reference this file.'
         self.scriptfile_textbox = QtGui.QLineEdit(main_frame)
         self.scriptfile_textbox.setText(self.scriptfile)
         self.scriptfile_textbox.setGeometry(100, 40, 200, 24)
         self.scriptfile_textbox.setAlignment(QtCore.Qt.AlignRight)
+        self.scriptfile_textbox.setToolTip(tooltip_text)
         scriptfile_textlabel = QtGui.QLabel('Script file', main_frame)
         scriptfile_textlabel.setGeometry(10, 40, 90, 24)
+        scriptfile_textlabel.setToolTip(tooltip_text)
         scriptfile_button = QtGui.QPushButton('...', main_frame)
         scriptfile_button.setGeometry(310, 40, 30, 24)
+        scriptfile_button.setToolTip(tooltip_text)
         main_frame.connect(self.scriptfile_textbox,
                            QtCore.SIGNAL('editingFinished()'),
                            self.set_script_file)
@@ -127,14 +134,18 @@ class BatchCommander:
                            QtCore.SIGNAL('clicked()'),
                            self.open_scriptfile_dialog)
 
+        tooltip_text = 'The location of the output PDF file to be\ngenerated.'
         self.outfile_textbox = QtGui.QLineEdit(main_frame)
         self.outfile_textbox.setGeometry(100, 66, 200, 24)
         self.outfile_textbox.setText(self.outputfile)
         self.outfile_textbox.setAlignment(QtCore.Qt.AlignRight)
+        self.outfile_textbox.setToolTip(tooltip_text)
         outfile_textlabel = QtGui.QLabel('Output file', main_frame)
         outfile_textlabel.setGeometry(10, 66, 90, 24)
+        outfile_textlabel.setToolTip(tooltip_text)
         outfile_button = QtGui.QPushButton('...', main_frame)
         outfile_button.setGeometry(310, 66, 30, 24)
+        outfile_button.setToolTip(tooltip_text)
         main_frame.connect(self.outfile_textbox,
                            QtCore.SIGNAL('editingFinished()'),
                            self.set_output_file)
@@ -150,6 +161,7 @@ class BatchCommander:
         immediate_box = QtGui.QCheckBox('&Immediate mode', main_frame)
         immediate_box.setGeometry(10, 92, 150, 30)
         immediate_box.setChecked(self.immediate_mode)
+        immediate_box.setToolTip('If enabled, Batch Commander will immediately \ngenerate the output file once a control is changed.')
         main_frame.connect(immediate_box,
                            QtCore.SIGNAL('stateChanged(int)'),
                            self.set_immediate_mode)
@@ -190,8 +202,8 @@ class BatchCommander:
         self.tab_bar.addTab(data_frame, '&Data files')
 
         ### Options tab ###
-        options_frame = QtGui.QFrame()
-        self.tab_bar.addTab(options_frame, '&Options')
+        # options_frame = QtGui.QFrame()
+        # self.tab_bar.addTab(options_frame, '&Options')
 
         ### wrap up main window ###
         self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT)
@@ -206,6 +218,8 @@ class BatchCommander:
 
         self.controls_window = QtGui.QMainWindow()
         self.controls_window.setWindowTitle('Batch Commander: Controls')
+        self.control_status = self.controls_window.statusBar()
+        self.control_status.showMessage(' ')
 
         self.toolbar = QtGui.QToolBar(self.controls_window)
         self.dataset_selector = QtGui.QComboBox()
@@ -226,6 +240,7 @@ class BatchCommander:
         self.toolbar.addWidget(self.reload_button)
         self.toolbar.setFloatable(False)
         self.toolbar.setMovable(False)
+
 
         # Check if there are any datafiles
         try:
@@ -262,10 +277,11 @@ class BatchCommander:
 
         self.controls = []
         for section in self.current_dataset.sections:
+            scrollbox = QtGui.QScrollArea()
             # count fields
             numberOfFields = len(section.fields)
             # make frame
-            container = QtGui.QFrame()
+            container = QtGui.QFrame(scrollbox)
             container.setGeometry(0,0,FIELDWIDTH, FIELDHEIGHT*numberOfFields)
             fieldCount = 0
             for field in section.fields:
@@ -276,8 +292,13 @@ class BatchCommander:
                 control.setGeometry(0,fieldCount*FIELDHEIGHT,
                                     FIELDWIDTH, FIELDHEIGHT)
                 self.controls.append(control)
+                self.controls_window.connect(control,
+                                             QtCore.SIGNAL('fieldEnter(PyQt_PyObject)'),
+                                             self.on_control_entered)
+                self.controls_window.connect(control,
+                                             QtCore.SIGNAL('fieldLeave(PyQt_PyObject)'),
+                                             self.on_control_left)
                 fieldCount += 1
-            scrollbox = QtGui.QScrollArea()
             scrollbox.setWidget(container)
             # make scrollbox flat
             scrollbox.setFrameStyle(container.NoFrame)
@@ -411,6 +432,11 @@ class BatchCommander:
                     self.current_dataset = dataset
             self.update_toolbox()
 
+    def on_control_entered(self, control):
+        self.control_status.showMessage(control.longname)
+
+    def on_control_left(self, field):
+        self.control_status.showMessage(' ')
 
     def on_process_finished(self, value):
         # error codes from QProcess are not to be trusted, so we also

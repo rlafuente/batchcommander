@@ -53,7 +53,7 @@ class Control(QtGui.QWidget):
         self.hboxwidget.setGeometry(QtCore.QRect(110, 0, 220, self.height))
         self.hbox = QtGui.QHBoxLayout(self.hboxwidget)
 
-        self.label = QtGui.QLabel(self.longname, self)
+        self.label = QtGui.QLabel(self.name, self)
         self.label.setGeometry(QtCore.QRect(0, 0, self.width, self.height))
         self.label.setAlignment(QtCore.Qt.AlignRight|
                                 QtCore.Qt.AlignVCenter)
@@ -82,6 +82,11 @@ class Control(QtGui.QWidget):
         pass    
     def get_value(self):
         pass
+
+    def enterEvent(self, ev):
+        self.emit(QtCore.SIGNAL('fieldEnter(PyQt_PyObject)'), self)
+    def leaveEvent(self, ev):
+        self.emit(QtCore.SIGNAL('fieldLeave(PyQt_PyObject)'), self)
 
 
 class ToggleControl(Control):

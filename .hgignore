@@ -7,6 +7,10 @@ syntax: glob
 # build and dist output
 build/*
 dist/*
+# vim swap files
+*.swp
+*.swo
+*.swn
 # python bytecode files
 *.pyc
 *.pyo
