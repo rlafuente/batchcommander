@@ -10,6 +10,7 @@ setup(
           'includes': [
             "sip",
             "PyQt4._qt",
+            "QtPoppler",
             "yaml",
             ]
         }
