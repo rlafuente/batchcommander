@@ -1,5 +1,8 @@
 from setuptools import setup
-import os
+import sys, os
+
+# add the Poppler-Qt Python bindings to the syspath
+sys.path.insert(os.path.abspath('./qtpoppler/mac'))
 
 setup(
       name='Batch Commander',
