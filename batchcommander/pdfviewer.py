@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt4 import QtCore, QtGui
+import sys, os
 import QtPoppler
 
 '''
@@ -28,6 +29,12 @@ PDF Viewer code taken from OpenLP by Raoul Snyman and others.
 ###############################################################################
 
 '''
+
+
+if sys.platform == 'darwin':
+    ICON_LOCATION_ROOT = '../assets'
+else:
+    ICON_LOCATION_ROOT = os.path.expanduser('~/.batchcommander/assets')
 
 class PdfViewerWidget(QtGui.QWidget):
     def __init__(self, *args, **kwargs):
@@ -139,11 +146,49 @@ class PdfViewerWidget(QtGui.QWidget):
         return img
     
 class PdfViewerWindow:
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         self.main_window = QtGui.QMainWindow()
         self.setupUi(self.main_window)
-        self.pdfViewer.load(filename)
+        self.filename = filename
+        if self.filename:
+            self.pdfViewer.load(self.filename)
+        else:
+            self.pdfViewer.blank()
+        self.main_window.hide()
+
+    def load(self, filename):
+        if filename == self.filename:
+            page = self.pdfViewer.currentPage
+        else:
+            page = 1
+        self.filename = filename
+        self.pdfViewer.unBlank()
+        self.pdfViewer.load(self.filename)
+        self.pdfViewer.showPage(page)
+
+    def reload(self):
+        currentpage = self.pdfViewer.currentPage
+        self.pdfViewer.load(self.filename)
+        self.pdfViewer.showPage(currentpage)
+
+    def show(self):
         self.main_window.show()
+
+    def hide(self):
+        self.main_window.hide()
+
+    @QtCore.pyqtSlot()
+    def next_page(self):
+        self.pdfViewer.nextPage()
+    @QtCore.pyqtSlot()
+    def previous_page(self):
+        self.pdfViewer.previousPage()
+    @QtCore.pyqtSlot()
+    def first_page(self):
+        self.pdfViewer.showPage(0)
+    @QtCore.pyqtSlot()
+    def last_page(self):
+        self.pdfViewer.showPage(self.pdfViewer.doc.numPages() - 1)
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -166,32 +211,38 @@ class PdfViewerWindow:
         MainWindow.insertToolBarBreak(self.toolBar)
         self.actionPrevious_Page = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../assets/go-previous.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-previous.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actionPrevious_Page.setIcon(icon)
         self.actionPrevious_Page.setObjectName("actionPrevious_Page")
+        self.actionPrevious_Page.triggered.connect(self.previous_page)
+
         self.actionNext_Page = QtGui.QAction(MainWindow)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("../assets/go-next.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon1.addPixmap(QtGui.QPixmap("../assets/go-previous.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon1.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-next.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionNext_Page.setIcon(icon1)
-        self.actionNext_Page.setObjectName("actionNext_Page")
+        self.actionNext_Page.setObjectName("actionNextPage")
+        self.actionNext_Page.triggered.connect(self.next_page)
+
         self.actionFirst_Page = QtGui.QAction(MainWindow)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("../assets/go-first.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-first.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionFirst_Page.setIcon(icon2)
         self.actionFirst_Page.setObjectName("actionFirst_Page")
+        self.actionFirst_Page.triggered.connect(self.first_page)
+
         self.actionLast_Page = QtGui.QAction(MainWindow)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("../code/batchcommander/assets/go-last.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon3.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-last.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.actionLast_Page.setIcon(icon3)
         self.actionLast_Page.setObjectName("actionLast_Page")
+        self.actionLast_Page.triggered.connect(self.last_page)
         self.toolBar.addAction(self.actionFirst_Page)
         self.toolBar.addAction(self.actionPrevious_Page)
         self.toolBar.addAction(self.actionNext_Page)
         self.toolBar.addAction(self.actionLast_Page)
 
         self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        # QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))

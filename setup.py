@@ -18,6 +18,8 @@ datafiles.extend([(os.path.join(localdir, root) ,[os.path.join(root, file_)
 for file_ in files]) for root,dir,files in os.walk('datafiles')])
 datafiles.extend([(os.path.join(localdir, root) ,[os.path.join(root, file_)
 for file_ in files]) for root,dir,files in os.walk('examples')])
+datafiles.extend([(os.path.join(localdir, root) ,[os.path.join(root, file_)
+for file_ in files]) for root,dir,files in os.walk('assets')])
 
 # do it
 setup(name="batchcommander",

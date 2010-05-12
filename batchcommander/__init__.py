@@ -35,6 +35,7 @@ from PyQt4 import QtGui, QtCore
 
 from batchcommander.controls import create_control_from_field
 from batchcommander.parser import DataSet
+from batchcommander.pdfviewer import PdfViewerWindow
 from batchcommander.defaults import *
 
 logging.basicConfig(level=logging.DEBUG)
@@ -57,6 +58,7 @@ class BatchCommander:
         self.scriptfile = scriptfile
         self.outputfile = outputfile
         self.outputmode = output_mode
+        self.is_pdfviewer_open = False
         self.sections = None
         self.immediate_mode = immediate_mode
         self.command = command
@@ -68,6 +70,8 @@ class BatchCommander:
         self.process.setStandardOutputFile(self.output_log_filename)
 
         self.app = QtGui.QApplication(sys.argv)
+
+        self.pdfviewer = PdfViewerWindow()
 
         # we need this here for now, otherwise it borks
         # this will refer to the combobox in the control window
@@ -158,6 +162,12 @@ class BatchCommander:
         main_frame.connect(self.run_button,
                            QtCore.SIGNAL('clicked()'),
                            self.run)
+        self.pdfview_button = QtGui.QPushButton('&Show PDF View', main_frame)
+        self.pdfview_button.setGeometry(310, 92, 100, 30)
+        main_frame.connect(self.pdfview_button,
+                           QtCore.SIGNAL('clicked()'),
+                           self.on_pdfview_button_clicked)
+
         immediate_box = QtGui.QCheckBox('&Immediate mode', main_frame)
         immediate_box.setGeometry(10, 92, 150, 30)
         immediate_box.setChecked(self.immediate_mode)
@@ -172,7 +182,6 @@ class BatchCommander:
         data_frame = QtGui.QFrame()
         list_container = QtGui.QScrollArea(data_frame)
         list_container.setGeometry(10,10, 220, 120)
-
 
         self.add_button = QtGui.QPushButton('+', data_frame)
         self.add_button.setGeometry(235,10,20,20)
@@ -211,7 +220,6 @@ class BatchCommander:
         self.status.showMessage('Ready.')
         self.main_window.setCentralWidget(self.tab_bar)
         self.main_window.show()
-
 
     def show_controls_window(self):
         '''Create and display the controls window.'''
@@ -460,6 +468,7 @@ class BatchCommander:
             finally:
                 fhandle.close()
 
+            '''
             # on OSX, we open Preview, and if it's already open we poke it for auto-reloading
             if sys.platform == 'darwin':
                 if sys.version_info < (2,6):
@@ -467,6 +476,9 @@ class BatchCommander:
                 else:
                     import subprocess
                     subprocess.call('open %s' % self.outputfile, shell=True)
+            '''
+            if self.is_pdfviewer_open:
+                self.pdfviewer.load(self.outputfile)
 
             self.end_time = datetime.now()
             elapsed = self.end_time - self.start_time
@@ -479,6 +491,17 @@ class BatchCommander:
             self.status.showMessage('Done in ' + timestring + '.')
         self.run_button.setEnabled(True)
         self.toolbox.setEnabled(True)
+
+    def on_pdfview_button_clicked(self):
+        self.is_pdfviewer_open = not self.is_pdfviewer_open
+        if self.is_pdfviewer_open:
+            # show the pdf viewer
+            self.pdfviewer.show()
+            self.pdfview_button.setText('Hide PDF View')
+        else:
+            # hide the pdf viewer
+            self.pdfviewer.hide()
+            self.pdfview_button.setText('Show PDF View')
 
     def add_list_item(self, dataset):
         name = dataset.name
