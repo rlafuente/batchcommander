@@ -21,6 +21,8 @@ echo ' *** Running py2app... *** '
 python setup-mac.py py2app --resources datafiles --iconfile batch-icon.icns
 echo ' *** Creating a dummy qt.conf... *** '
 touch ./dist/Batch\ Commander.app/Contents/Resources/qt.conf
+echo ' *** Replacing __boot__.py... ***'
+cp -f ./assets/__boot__.py dist/Batch\ Commander.app/Contents/Resources/
 echo ' *** Compressing the app into a DMG image file... ***'
 if [ -f $temp_dmg_filename ]; then
     rm $temp_dmg_filename
@@ -67,10 +69,10 @@ echo '
 ' | osascript
 
 echo " *** Wrapping up the DMG file... *** "
-chmod -Rf go-w /Volumes/"${title}"
+# chmod -Rf go-w /Volumes/"${title}"
 sync
 sync
-hdiutil detach ${device}
+# hdiutil detach ${device}
 hdiutil convert $temp_dmg_filename -format UDZO -imagekey zlib-level=9 -o "${dmg_filename}"
 rm -f $temp_dmg_filename
 

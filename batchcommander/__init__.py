@@ -585,8 +585,6 @@ class BatchCommander:
         return None
 
     def check_for_tex(self):
-        import subprocess
-
         # MacTeX places the TeX binaries somewhere else
         if sys.platform == 'darwin':
             tex_cmd = '/usr/texbin/tex -version'
@@ -597,19 +595,13 @@ class BatchCommander:
 
         # bug 1068268 in Python prevents us from using subprocess.call
         # in versions under 2.6
-        if sys.version_info < (2,6):
-            retcode = os.system(tex_cmd)
-        else:
-            retcode = subprocess.call(tex_cmd, shell=True)
+        retcode = os.system(tex_cmd)
         if retcode:
             self.show_error_window('TeX is not installed.', 
                                    'Batch Commander requires TeX to run.')
             sys.exit()
 
-        if sys.version_info < (2,6):
-            retcode = os.system(pdflatex_cmd)
-        else:
-            retcode = subprocess.call(pdflatex_cmd, shell=True)
+        retcode = os.system(pdflatex_cmd)
         if retcode:
             self.show_error_window('PDFLaTeX is not installed.', 
                                    'Batch Commander requires PDFLaTeX to run.')
