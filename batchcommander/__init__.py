@@ -441,7 +441,7 @@ class BatchCommander:
             self.update_toolbox()
 
     def on_control_entered(self, control):
-        self.control_status.showMessage(control.longname)
+        self.control_status.showMessage(control.name)
 
     def on_control_left(self, field):
         self.control_status.showMessage(' ')
