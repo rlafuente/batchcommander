@@ -41,6 +41,12 @@ from batchcommander.defaults import *
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("BatchCommander")
 
+class TitleBarWidget(QtGui.QLabel):
+    def __init__(self, *args, **kwargs):
+        super(TitleBarWidget, self).__init__(*args, **kwargs)
+    def mousePressEvent(self, event):
+        self.emit(QtCore.SIGNAL('titleClicked(PyQt_PyObject)'), self.parent())
+
 class BatchCommander:
     '''Batch Commander UI runner'''
     def __init__(self,
@@ -236,13 +242,11 @@ class BatchCommander:
         self.controls_window.connect(self.dataset_selector,
                                      QtCore.SIGNAL('activated(int)'),
                                      self.on_selector_changed)
-
         self.reload_button = QtGui.QPushButton('&Reload')
         self.reload_button.setGeometry(FIELDWIDTH - 80, 5, 100, 30)
         self.controls_window.connect(self.reload_button,
                                      QtCore.SIGNAL('clicked()'),
                                      self.reload_current_dataset)
-
         self.toolbar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
         self.toolbar.addWidget(self.dataset_selector)
         self.toolbar.addWidget(self.reload_button)
@@ -255,14 +259,13 @@ class BatchCommander:
             self.current_dataset = self.datasets[0]
         except IndexError:
             self.current_dataset = None
-        self.toolbox = QtGui.QToolBox()
-        self.update_toolbox()
+        self.docks = []
+        self.update_docks()
 
         self.set_immediate_mode(self.immediate_mode)
         # self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
         self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,FIELDWIDTH+25,450)
         self.controls_window.addToolBar(self.toolbar)
-        self.controls_window.setCentralWidget(self.toolbox)
         self.controls_window.show()
 
     def update_selector(self):
@@ -278,10 +281,10 @@ class BatchCommander:
         self.current_dataset = new_dataset
         self.update_toolbox()
 
-    def update_toolbox(self):
+    def update_docks(self):
         # clear it
-        for i in range(self.toolbox.count()):
-            self.toolbox.removeItem(0)
+        for d in self.docks:
+            d.destroy()
 
         self.controls = []
         for section in self.current_dataset.sections:
@@ -310,7 +313,22 @@ class BatchCommander:
             scrollbox.setWidget(container)
             # make scrollbox flat
             scrollbox.setFrameStyle(container.NoFrame)
-            self.toolbox.addItem(scrollbox, section.name)
+
+            # create dock widget
+            dock = QtGui.QDockWidget(section.name)
+            t = TitleBarWidget(section.name, dock)
+            dock.setTitleBarWidget(t)
+            dock.setWidget(scrollbox)
+            self.docks.append(dock)
+            self.controls_window.connect(t,
+                                         QtCore.SIGNAL('titleClicked(PyQt_PyObject)'),
+                                         self.toggle_dock_visibility)
+            self.controls_window.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
+            if len(self.docks) > 1:
+                dock.widget().setVisible(False)
+        #for d in self.docks:
+        #    self.controls_window.tabifyDockWidget(self.docks[0], d)
+
 
     def run(self):
         # make sure input file exists
@@ -318,7 +336,7 @@ class BatchCommander:
             self.status.showMessage("Input file doesn't exist!", 2000)
             return
         self.run_button.setDisabled(True)
-        self.toolbox.setDisabled(True)
+        # self.toolbox.setDisabled(True)
         self.status.showMessage('Generating %s...' % (self.scriptfile))
         
         try:
@@ -345,11 +363,11 @@ class BatchCommander:
 
         except NotInstalledError:
             self.run_button.setEnabled(True)
-            self.toolbox.setEnabled(True)
+            # self.toolbox.setEnabled(True)
             self.status.showMessage('Failed :(')
         except:
             self.run_button.setEnabled(True)
-            self.toolbox.setEnabled(True)
+            # self.toolbox.setEnabled(True)
             self.status.showMessage('Failed :(')
             
 
@@ -421,6 +439,12 @@ class BatchCommander:
                                    QtCore.SIGNAL('controlChanged()'),
                                    self.run)
 
+    def toggle_dock_visibility(self, dock):
+        if dock.widget().isVisible():
+            dock.widget().setVisible(False)
+        else:
+            dock.widget().setVisible(True)
+
     def on_list_item_changed(self, item):
         value = bool(item.checkState())
         for dataset in self.datasets:
@@ -490,7 +514,7 @@ class BatchCommander:
                 timestring = '00:%02d.%d' % (s, elapsed.microseconds)
             self.status.showMessage('Done in ' + timestring + '.')
         self.run_button.setEnabled(True)
-        self.toolbox.setEnabled(True)
+        # self.toolbox.setEnabled(True)
 
     def on_pdfview_button_clicked(self):
         self.is_pdfviewer_open = not self.is_pdfviewer_open
