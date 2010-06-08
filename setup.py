@@ -21,6 +21,11 @@ for file_ in files]) for root,dir,files in os.walk('examples')])
 datafiles.extend([(os.path.join(localdir, root) ,[os.path.join(root, file_)
 for file_ in files]) for root,dir,files in os.walk('assets')])
 
+# hack for getting the QtPoppler binary inside
+from distutils.sysconfig import get_python_lib
+datafiles.append((get_python_lib(), ['qtpoppler/linux/QtPoppler.so']))
+
+
 # do it
 setup(name="batchcommander",
       version="0.1",
