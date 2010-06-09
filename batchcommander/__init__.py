@@ -47,6 +47,15 @@ class TitleBarWidget(QtGui.QLabel):
     def mousePressEvent(self, event):
         self.emit(QtCore.SIGNAL('titleClicked(PyQt_PyObject)'), self.parent())
 
+class MiniDock(QtGui.QDockWidget):
+    def __init__(self, *args, **kwargs):
+        super(MiniDock, self).__init__(*args, **kwargs)
+    def toggleVisibility(self):
+        if self.widget().isVisible():
+            self.widget().setVisible(False)
+        else:
+            self.widget().setVisible(True)
+
 class BatchCommander:
     '''Batch Commander UI runner'''
     def __init__(self,
@@ -315,8 +324,8 @@ class BatchCommander:
             scrollbox.setFrameStyle(container.NoFrame)
 
             # create dock widget
-            dock = QtGui.QDockWidget(section.name)
-            t = TitleBarWidget(section.name, dock)
+            dock = MiniDock(section.name)
+            t = TitleBarWidget('%i. %s' % (len(self.docks) + 1, section.name), dock)
             dock.setTitleBarWidget(t)
             dock.setWidget(scrollbox)
             self.docks.append(dock)
@@ -324,6 +333,13 @@ class BatchCommander:
                                          QtCore.SIGNAL('titleClicked(PyQt_PyObject)'),
                                          self.toggle_dock_visibility)
             self.controls_window.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
+            # keyboard shortcut to open/close dock
+            sc = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+%i" % (len(self.docks))), dock)
+            dock.connect(sc,
+                         QtCore.SIGNAL('activated()'),
+                         dock.toggleVisibility
+                         )
+
             if len(self.docks) > 1:
                 dock.widget().setVisible(False)
         #for d in self.docks:
