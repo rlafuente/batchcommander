@@ -58,7 +58,7 @@ class Control(QtGui.QWidget):
         self.label.setAlignment(QtCore.Qt.AlignRight|
                                 QtCore.Qt.AlignVCenter)
         self.label.setGeometry(0, 0, 110, self.height)
-        self.label.setFont(QtGui.QFont('Lucida Grande', 10))
+        self.label.setFont(QtGui.QFont('Lucida Grande', 8))
 
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, 
                                              QtGui.QSizePolicy.Preferred))

@@ -48,6 +48,7 @@ class PdfViewerWidget(QtGui.QWidget):
         self.setGeometry(QtGui.QApplication.desktop().screenGeometry())
         # self.hide() 
 
+    '''
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Down:
             self.nextPage()
@@ -55,6 +56,7 @@ class PdfViewerWidget(QtGui.QWidget):
             self.previousPage()
         elif event.key() == QtCore.Qt.Key_Escape:
             self.stop()
+    '''
 
     def paintEvent(self, event):
         if self.isBlanked:
@@ -66,7 +68,6 @@ class PdfViewerWidget(QtGui.QWidget):
         y = (self.frameSize().height() - img.height()) / 2
         painter = QtGui.QPainter(self)
         painter.drawImage(x, y, img)
-        print self.size()
 
     def getCurrentPage(self):
         return self.currentPage + 1
@@ -145,16 +146,16 @@ class PdfViewerWidget(QtGui.QWidget):
             img = self.getImage(idx)
         return img
     
-class PdfViewerWindow:
-    def __init__(self, filename=None):
-        self.main_window = QtGui.QMainWindow()
-        self.setupUi(self.main_window)
+class PdfViewerWindow(QtGui.QMainWindow):
+    def __init__(self, filename=None, *args, **kwargs):
+        super(PdfViewerWindow, self).__init__(*args, **kwargs)
+        self.setupUi(self)
         self.filename = filename
         if self.filename:
             self.pdfViewer.load(self.filename)
         else:
             self.pdfViewer.blank()
-        self.main_window.hide()
+        self.show()
 
     def load(self, filename):
         if filename == self.filename:
@@ -170,12 +171,6 @@ class PdfViewerWindow:
         currentpage = self.pdfViewer.currentPage
         self.pdfViewer.load(self.filename)
         self.pdfViewer.showPage(currentpage)
-
-    def show(self):
-        self.main_window.show()
-
-    def hide(self):
-        self.main_window.hide()
 
     @QtCore.pyqtSlot()
     def next_page(self):
@@ -245,7 +240,8 @@ class PdfViewerWindow:
         # QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow",
+            "Batch Commander", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPrevious_Page.setText(QtGui.QApplication.translate("MainWindow", "Previous Page", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNext_Page.setText(QtGui.QApplication.translate("MainWindow", "Next Page", None, QtGui.QApplication.UnicodeUTF8))

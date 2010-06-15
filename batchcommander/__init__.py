@@ -50,6 +50,7 @@ class TitleBarWidget(QtGui.QLabel):
 class MiniDock(QtGui.QDockWidget):
     def __init__(self, *args, **kwargs):
         super(MiniDock, self).__init__(*args, **kwargs)
+
     def toggleVisibility(self):
         if self.widget().isVisible():
             self.widget().setVisible(False)
@@ -73,7 +74,7 @@ class BatchCommander:
         self.scriptfile = scriptfile
         self.outputfile = outputfile
         self.outputmode = output_mode
-        self.is_pdfviewer_open = False
+        self.is_pdfviewer_open = True
         self.sections = None
         self.immediate_mode = immediate_mode
         self.command = command
@@ -94,7 +95,10 @@ class BatchCommander:
 
         # check for PDFTeX before anything else
         self.check_for_tex()
-
+        # create UI
+        self.show_ui()
+        self.pdfviewer.show()
+        
 
     def show_ui(self):
         self.show_main_window()
@@ -105,8 +109,8 @@ class BatchCommander:
 
     def show_main_window(self):
         '''Create and display the main interface window.'''
-        self.main_window = QtGui.QMainWindow()
-        self.main_window.setWindowTitle('Batch Commander: Main')
+        self.main_window = self.pdfviewer
+        # self.main_window.setWindowTitle('Batch Commander: Main')
         self.tab_bar = QtGui.QTabWidget()
         self.status = self.main_window.statusBar()
         
@@ -177,12 +181,7 @@ class BatchCommander:
         main_frame.connect(self.run_button,
                            QtCore.SIGNAL('clicked()'),
                            self.run)
-        self.pdfview_button = QtGui.QPushButton('&Show PDF View', main_frame)
-        self.pdfview_button.setGeometry(310, 92, 100, 30)
-        main_frame.connect(self.pdfview_button,
-                           QtCore.SIGNAL('clicked()'),
-                           self.on_pdfview_button_clicked)
-
+       
         immediate_box = QtGui.QCheckBox('&Immediate mode', main_frame)
         immediate_box.setGeometry(10, 92, 150, 30)
         immediate_box.setChecked(self.immediate_mode)
@@ -230,30 +229,33 @@ class BatchCommander:
         # self.tab_bar.addTab(options_frame, '&Options')
 
         ### wrap up main window ###
-        self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT)
+        self.right_dock = QtGui.QDockWidget('File control', self.main_window)
+        self.right_dock.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.right_dock.setWidget(self.tab_bar)
+        self.main_window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.right_dock)
+        self.right_dock.show()
+
+        # self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT)
         self.main_window.connect(self.process, QtCore.SIGNAL('finished(int)'), self.on_process_finished)
         self.status.showMessage('Ready.')
-        self.main_window.setCentralWidget(self.tab_bar)
-        self.main_window.show()
 
     def show_controls_window(self):
         '''Create and display the controls window.'''
 
-        self.controls_window = QtGui.QMainWindow()
-        self.controls_window.setWindowTitle('Batch Commander: Controls')
-        self.control_status = self.controls_window.statusBar()
-        self.control_status.showMessage(' ')
+        self.control_status = self.status
+        '''
+        self.controls_dock = QtGui.QDockWidget('Controls', self.main_window)
 
-        self.toolbar = QtGui.QToolBar(self.controls_window)
+        self.toolbar = QtGui.QToolBar(self.controls_dock)
         self.dataset_selector = QtGui.QComboBox()
         # self.dataset_selector.setGeometry(5, 5, 150, 30)
         self.update_selector()
-        self.controls_window.connect(self.dataset_selector,
+        self.controls_dock.connect(self.dataset_selector,
                                      QtCore.SIGNAL('activated(int)'),
                                      self.on_selector_changed)
         self.reload_button = QtGui.QPushButton('&Reload')
         self.reload_button.setGeometry(FIELDWIDTH - 80, 5, 100, 30)
-        self.controls_window.connect(self.reload_button,
+        self.controls_dock.connect(self.reload_button,
                                      QtCore.SIGNAL('clicked()'),
                                      self.reload_current_dataset)
         self.toolbar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
@@ -261,7 +263,7 @@ class BatchCommander:
         self.toolbar.addWidget(self.reload_button)
         self.toolbar.setFloatable(False)
         self.toolbar.setMovable(False)
-
+        '''
 
         # Check if there are any datafiles
         try:
@@ -273,9 +275,9 @@ class BatchCommander:
 
         self.set_immediate_mode(self.immediate_mode)
         # self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
-        self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,FIELDWIDTH+25,450)
-        self.controls_window.addToolBar(self.toolbar)
-        self.controls_window.show()
+        # self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,FIELDWIDTH+25,450)
+        # self.controls_window.addToolBar(self.toolbar)
+        # self.controls_window.show()
 
     def update_selector(self):
         if self.dataset_selector:
@@ -312,10 +314,10 @@ class BatchCommander:
                 control.setGeometry(0,fieldCount*FIELDHEIGHT,
                                     FIELDWIDTH, FIELDHEIGHT)
                 self.controls.append(control)
-                self.controls_window.connect(control,
+                self.main_window.connect(control,
                                              QtCore.SIGNAL('fieldEnter(PyQt_PyObject)'),
                                              self.on_control_entered)
-                self.controls_window.connect(control,
+                self.main_window.connect(control,
                                              QtCore.SIGNAL('fieldLeave(PyQt_PyObject)'),
                                              self.on_control_left)
                 fieldCount += 1
@@ -326,20 +328,20 @@ class BatchCommander:
             # create dock widget
             dock = MiniDock(section.name)
             t = TitleBarWidget('%i. %s' % (len(self.docks) + 1, section.name), dock)
+            t.setFixedWidth(340)
             dock.setTitleBarWidget(t)
             dock.setWidget(scrollbox)
             self.docks.append(dock)
-            self.controls_window.connect(t,
-                                         QtCore.SIGNAL('titleClicked(PyQt_PyObject)'),
-                                         self.toggle_dock_visibility)
-            self.controls_window.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
+            self.main_window.connect(t,
+                                       QtCore.SIGNAL('titleClicked(PyQt_PyObject)'),
+                                       self.toggle_dock_visibility)
+            self.main_window.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
             # keyboard shortcut to open/close dock
             sc = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+%i" % (len(self.docks))), dock)
             dock.connect(sc,
                          QtCore.SIGNAL('activated()'),
                          dock.toggleVisibility
                          )
-
             if len(self.docks) > 1:
                 dock.widget().setVisible(False)
         #for d in self.docks:
@@ -656,4 +658,3 @@ class BatchCommander:
 
 if __name__ == '__main__':
     bc = BatchCommander(datafile=sys.argv[1])
-    bc.show_ui()
