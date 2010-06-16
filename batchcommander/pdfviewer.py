@@ -42,6 +42,7 @@ class PdfViewerWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, *args, **kwargs)
         self.setWindowTitle("PDF Viewer")
         self.isBlanked = False
+        self.scale = 1.
         p = QtGui.QPalette()
         p.setColor(QtGui.QPalette.Background, QtCore.Qt.black);
         self.setPalette(p)
@@ -88,6 +89,22 @@ class PdfViewerWidget(QtGui.QWidget):
     def display(self):
         self.update()
         self.cacheImage(self.currentPage + 1)
+
+    def zoom_in(self):
+        if self.isBlanked: return
+        self.scale += .2
+        image = self.getImage(self.currentPage)
+        scaledimage = image.scaled(image.width() * self.scale, image.height() * self.scale)
+        image = scaledimage
+        self.update()
+
+    def zoom_out(self):
+        if self.isBlanked: return
+        self.scale -= .2
+        image = self.getImage(self.currentPage)
+        print image
+        image.scale = self.scale
+        self.update()
 
     def start(self):
         self.showFullScreen()
@@ -145,6 +162,7 @@ class PdfViewerWidget(QtGui.QWidget):
         if img is None:
             img = self.getImage(idx)
         return img
+
     
 class PdfViewerWindow(QtGui.QMainWindow):
     def __init__(self, filename=None, *args, **kwargs):
@@ -184,6 +202,20 @@ class PdfViewerWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def last_page(self):
         self.pdfViewer.showPage(self.pdfViewer.doc.numPages() - 1)
+
+    def zoom_in(self):
+        self.pdfViewer.zoom_in()
+    def zoom_out(self):
+        self.pdfViewer.zoom_out()
+
+    def keyPressEvent(self, event):
+        if (event.key() == QtCore.Qt.Key_Plus):
+            self.zoom_in()
+        elif (event.key() == QtCore.Qt.Key_Minus):
+            self.zoom_out()
+        else:
+            QtGui.QMainWindow.keyPressEvent(self, event)
+
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")

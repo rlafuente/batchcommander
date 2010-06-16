@@ -41,15 +41,9 @@ from batchcommander.defaults import *
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("BatchCommander")
 
-class TitleBarWidget(QtGui.QLabel):
+class ShyDock(QtGui.QDockWidget):
     def __init__(self, *args, **kwargs):
-        super(TitleBarWidget, self).__init__(*args, **kwargs)
-    def mousePressEvent(self, event):
-        self.emit(QtCore.SIGNAL('titleClicked(PyQt_PyObject)'), self.parent())
-
-class MiniDock(QtGui.QDockWidget):
-    def __init__(self, *args, **kwargs):
-        super(MiniDock, self).__init__(*args, **kwargs)
+        super(ShyDock, self).__init__(*args, **kwargs)
 
     def toggleVisibility(self):
         if self.widget().isVisible():
@@ -98,6 +92,8 @@ class BatchCommander:
         # create UI
         self.show_ui()
         self.pdfviewer.show()
+
+        self.pdfviewer.zoom_in()
         
 
     def show_ui(self):
@@ -230,7 +226,8 @@ class BatchCommander:
 
         ### wrap up main window ###
         self.right_dock = QtGui.QDockWidget('File control', self.main_window)
-        self.right_dock.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.right_dock.setMinimumWidth(RIGHTDOCKWIDTH)
+        self.right_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
         self.right_dock.setWidget(self.tab_bar)
         self.main_window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.right_dock)
         self.right_dock.show()
@@ -326,15 +323,17 @@ class BatchCommander:
             scrollbox.setFrameStyle(container.NoFrame)
 
             # create dock widget
-            dock = MiniDock(section.name)
-            t = TitleBarWidget('%i. %s' % (len(self.docks) + 1, section.name), dock)
-            t.setFixedWidth(340)
+            dock = ShyDock(section.name)
+            dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
+            t = QtGui.QPushButton('%i. %s' % (len(self.docks) + 1, section.name))
             dock.setTitleBarWidget(t)
+            t.setFixedSize(DOCKBUTTONWIDTH, DOCKBUTTONHEIGHT)
+            dock.setMinimumWidth(DOCKBUTTONWIDTH)
             dock.setWidget(scrollbox)
             self.docks.append(dock)
             self.main_window.connect(t,
-                                       QtCore.SIGNAL('titleClicked(PyQt_PyObject)'),
-                                       self.toggle_dock_visibility)
+                                     QtCore.SIGNAL('clicked()'),
+                                     dock.toggleVisibility)
             self.main_window.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
             # keyboard shortcut to open/close dock
             sc = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+%i" % (len(self.docks))), dock)
@@ -344,9 +343,6 @@ class BatchCommander:
                          )
             if len(self.docks) > 1:
                 dock.widget().setVisible(False)
-        #for d in self.docks:
-        #    self.controls_window.tabifyDockWidget(self.docks[0], d)
-
 
     def run(self):
         # make sure input file exists
@@ -456,12 +452,6 @@ class BatchCommander:
                 control.disconnect(control,
                                    QtCore.SIGNAL('controlChanged()'),
                                    self.run)
-
-    def toggle_dock_visibility(self, dock):
-        if dock.widget().isVisible():
-            dock.widget().setVisible(False)
-        else:
-            dock.widget().setVisible(True)
 
     def on_list_item_changed(self, item):
         value = bool(item.checkState())
