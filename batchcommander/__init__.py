@@ -36,7 +36,11 @@ from PyQt4 import QtGui, QtCore
 from batchcommander.controls import create_control_from_field
 from batchcommander.parser import DataSet
 from batchcommander.pdfviewer import PdfViewerWindow
-from batchcommander.defaults import *
+if sys.platform == 'darwin':
+    from batchcommander.defaultsmac import *
+else:
+    from batchcommander.defaults import *
+
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("BatchCommander")

@@ -28,8 +28,12 @@
 '''GUI widgets for Batch Commander'''
 
 from __future__ import division
+import sys
 from PyQt4 import QtGui, QtCore
-from defaults import *
+if sys.platform == 'darwin':
+    from defaultsmac import *
+else:
+    from defaults import *
 
 
 class Control(QtGui.QWidget):
