@@ -252,7 +252,7 @@ class BatchCommander:
         ### wrap up main window ###
         self.right_dock = QtGui.QDockWidget('File control', self.main_window)
         self.right_dock.setMinimumWidth(RIGHTDOCKWIDTH)
-        self.right_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
+        # self.right_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
         self.right_dock.setWidget(self.tab_bar)
         self.main_window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.right_dock)
         self.right_dock.show()
@@ -261,31 +261,32 @@ class BatchCommander:
         self.main_window.connect(self.process, QtCore.SIGNAL('finished(int)'), self.on_process_finished)
         self.status.showMessage('Ready.')
 
+        
+
     def show_controls_window(self):
         '''Create and display the controls window.'''
 
         self.control_status = self.status
-        '''
-        self.controls_dock = QtGui.QDockWidget('Controls', self.main_window)
 
-        self.toolbar = QtGui.QToolBar(self.controls_dock)
+        self.toolbar = self.pdfviewer.toolBar
         self.dataset_selector = QtGui.QComboBox()
         # self.dataset_selector.setGeometry(5, 5, 150, 30)
         self.update_selector()
-        self.controls_dock.connect(self.dataset_selector,
-                                     QtCore.SIGNAL('activated(int)'),
-                                     self.on_selector_changed)
+        self.pdfviewer.connect(self.dataset_selector, QtCore.SIGNAL('activated(int)'), self.on_selector_changed)
         self.reload_button = QtGui.QPushButton('&Reload')
         self.reload_button.setGeometry(CONTROLWIDTH - 80, 5, 100, 30)
-        self.controls_dock.connect(self.reload_button,
-                                     QtCore.SIGNAL('clicked()'),
-                                     self.reload_current_dataset)
+        self.pdfviewer.connect(self.reload_button, QtCore.SIGNAL('clicked()'), self.reload_current_dataset)
         self.toolbar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
         self.toolbar.addWidget(self.dataset_selector)
         self.toolbar.addWidget(self.reload_button)
         self.toolbar.setFloatable(False)
         self.toolbar.setMovable(False)
-        '''
+
+        self.actionShow_RightDock = self.right_dock.toggleViewAction()
+        icon1 = QtGui.QIcon.fromTheme("document-properties")
+        self.actionShow_RightDock.setIcon(icon1)
+        self.toolbar.addAction(self.actionShow_RightDock)
+        # self.actionShow_RightDock.setObjectName("actionShow_RightDock")
 
         # Check if there are any datafiles
         try:
@@ -312,13 +313,18 @@ class BatchCommander:
         path = self.current_dataset.path
         new_dataset = DataSet(path)
         self.current_dataset = new_dataset
-        self.update_toolbox()
+        self.update_docks()
 
     def update_docks(self):
         # clear it
         for d in self.docks:
+            # overkill, but i have no time to ensure how to properly
+            # do this now
+            d.hide()
             d.destroy()
+            del d
 
+        self.docks = []
         self.controls = []
         for section in self.current_dataset.sections:
             scrollbox = QtGui.QScrollArea()
@@ -490,7 +496,7 @@ class BatchCommander:
             for dataset in self.datasets:
                 if dataset.name == new_dataset_name:
                     self.current_dataset = dataset
-            self.update_toolbox()
+            self.update_docks()
 
     def on_control_entered(self, control):
         self.control_status.showMessage(control.name)
@@ -626,7 +632,7 @@ class BatchCommander:
             for dataset in self.datasets:
                 if dataset.active:
                     self.current_dataset = dataset
-                    self.update_toolbox()
+                    self.update_docks()
             log.debug('Current dataset set to ' + self.current_dataset.name)
         self.update_selector()
 

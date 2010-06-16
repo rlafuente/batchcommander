@@ -93,17 +93,19 @@ class PdfViewerWidget(QtGui.QWidget):
     def zoom_in(self):
         if self.isBlanked: return
         self.scale += .2
-        image = self.getImage(self.currentPage)
-        scaledimage = image.scaled(image.width() * self.scale, image.height() * self.scale)
-        image = scaledimage
+        self.cacheImage(self.pdfImages[self.currentPage])
         self.update()
 
     def zoom_out(self):
         if self.isBlanked: return
         self.scale -= .2
-        image = self.getImage(self.currentPage)
-        print image
-        image.scale = self.scale
+        self.cacheImage(self.pdfImages[self.currentPage])
+        self.update()
+
+    def zoom_original(self):
+        if self.isBlanked: return
+        self.scale = 1.
+        self.cacheImage(self.pdfImages[self.currentPage])
         self.update()
 
     def start(self):
@@ -144,14 +146,15 @@ class PdfViewerWidget(QtGui.QWidget):
     def cacheImage(self, idx):        
         if idx >= self.doc.numPages():
             return
-        if self.pdfImages[idx] is not None:
-            return
+        # if self.pdfImages[idx] is not None:
+        #    return
         page = self.doc.page(idx)
-        ratio = 1.0 * self.frameSize().width() / page.pageSize().width()
-        yratio = 1.0 * self.frameSize().height() / page.pageSize().height()
+        ratio = self.scale * self.frameSize().width() / page.pageSize().width()
+        yratio = self.scale * self.frameSize().height() / page.pageSize().height()
         if yratio < ratio:
             ratio = yratio   
         self.pdfImages[idx] = page.renderToImage(72 * ratio,72 * ratio)
+        
    
     def getImage(self, idx):
         self.cacheImage(idx)
@@ -207,6 +210,8 @@ class PdfViewerWindow(QtGui.QMainWindow):
         self.pdfViewer.zoom_in()
     def zoom_out(self):
         self.pdfViewer.zoom_out()
+    def zoom_original(self):
+        self.pdfViewer.zoom_original()
 
     def keyPressEvent(self, event):
         if (event.key() == QtCore.Qt.Key_Plus):
@@ -226,7 +231,17 @@ class PdfViewerWindow(QtGui.QMainWindow):
         self.verticalLayout.setObjectName("verticalLayout")
         self.pdfViewer = PdfViewerWidget(self.centralwidget)
         self.pdfViewer.setObjectName("pdfViewer")
-        self.verticalLayout.addWidget(self.pdfViewer)
+
+        self.scrollbox = QtGui.QScrollArea()
+        self.scrollbox.setWidget(self.pdfViewer)
+        self.scrollbox.setFrameStyle(QtGui.QFrame.NoFrame)
+        size = self.scrollbox.maximumViewportSize()
+        x = size.width()
+        y = size.height()
+        self.scrollbox.horizontalScrollBar().setValue(x/2)
+        self.scrollbox.verticalScrollBar().setValue(y/2)
+        self.verticalLayout.addWidget(self.scrollbox)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -236,37 +251,58 @@ class PdfViewerWindow(QtGui.QMainWindow):
         self.toolBar.setObjectName("toolBar")
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         MainWindow.insertToolBarBreak(self.toolBar)
+
         self.actionPrevious_Page = QtGui.QAction(MainWindow)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-previous.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon = QtGui.QIcon.fromTheme("go-previous")
         self.actionPrevious_Page.setIcon(icon)
         self.actionPrevious_Page.setObjectName("actionPrevious_Page")
         self.actionPrevious_Page.triggered.connect(self.previous_page)
 
         self.actionNext_Page = QtGui.QAction(MainWindow)
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-next.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionNext_Page.setIcon(icon1)
+        icon = QtGui.QIcon.fromTheme("go-next")
+        self.actionNext_Page.setIcon(icon)
         self.actionNext_Page.setObjectName("actionNextPage")
         self.actionNext_Page.triggered.connect(self.next_page)
 
         self.actionFirst_Page = QtGui.QAction(MainWindow)
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-first.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionFirst_Page.setIcon(icon2)
+        icon = QtGui.QIcon.fromTheme("go-first")
+        self.actionFirst_Page.setIcon(icon)
         self.actionFirst_Page.setObjectName("actionFirst_Page")
         self.actionFirst_Page.triggered.connect(self.first_page)
 
         self.actionLast_Page = QtGui.QAction(MainWindow)
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(os.path.join(ICON_LOCATION_ROOT, "go-last.png")), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.actionLast_Page.setIcon(icon3)
+        icon = QtGui.QIcon.fromTheme("go-last")
+        self.actionLast_Page.setIcon(icon)
         self.actionLast_Page.setObjectName("actionLast_Page")
         self.actionLast_Page.triggered.connect(self.last_page)
+
+        self.actionZoom_In = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon.fromTheme("zoom-in")
+        self.actionZoom_In.setIcon(icon)
+        self.actionZoom_In.setObjectName("actionZoom_In")
+        self.actionZoom_In.triggered.connect(self.zoom_in)
+
+        self.actionZoom_Out = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon.fromTheme("zoom-out")
+        self.actionZoom_Out.setIcon(icon)
+        self.actionZoom_Out.setObjectName("actionZoom_Out")
+        self.actionZoom_Out.triggered.connect(self.zoom_out)
+
+        self.actionZoom_Original = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon.fromTheme("zoom-original")
+        self.actionZoom_Original.setIcon(icon)
+        self.actionZoom_Original.setObjectName("actionZoom_Original")
+        self.actionZoom_Original.triggered.connect(self.zoom_original)
+
         self.toolBar.addAction(self.actionFirst_Page)
         self.toolBar.addAction(self.actionPrevious_Page)
         self.toolBar.addAction(self.actionNext_Page)
         self.toolBar.addAction(self.actionLast_Page)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionZoom_In)
+        self.toolBar.addAction(self.actionZoom_Original)
+        self.toolBar.addAction(self.actionZoom_Out)
+        self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
         # QtCore.QMetaObject.connectSlotsByName(MainWindow)
