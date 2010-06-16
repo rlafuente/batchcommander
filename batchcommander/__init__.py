@@ -44,12 +44,34 @@ log = logging.getLogger("BatchCommander")
 class ShyDock(QtGui.QDockWidget):
     def __init__(self, *args, **kwargs):
         super(ShyDock, self).__init__(*args, **kwargs)
+        self.titlewidget = QtGui.QPushButton(args[0])
+        # t.getStyleSheet()
+        self.titlewidget.setStyleSheet('''QPushButton{text-align : left; }''')
+        self.titlewidget.setFixedSize(DOCKBUTTONWIDTH, DOCKBUTTONHEIGHT)
+        icon = QtGui.QIcon.fromTheme("list-remove")
+        self.titlewidget.setIcon(icon)
+        self.titlewidget.setIconSize(DOCKICONSIZE)
+        self.setTitleBarWidget(self.titlewidget)
+        self.connect(self.titlewidget,
+                     QtCore.SIGNAL('clicked()'),
+                     self.toggleVisibility)
 
     def toggleVisibility(self):
         if self.widget().isVisible():
-            self.widget().setVisible(False)
+            self.collapse()
         else:
-            self.widget().setVisible(True)
+            self.expand()
+
+    def expand(self):
+        icon = QtGui.QIcon.fromTheme("list-remove")
+        self.titlewidget.setIcon(icon)
+        self.titlewidget.setIconSize(DOCKICONSIZE)
+        self.widget().setVisible(True)
+    def collapse(self):
+        icon = QtGui.QIcon.fromTheme("list-add")
+        self.titlewidget.setIcon(icon)
+        self.titlewidget.setIconSize(DOCKICONSIZE)
+        self.widget().setVisible(False)
 
 class BatchCommander:
     '''Batch Commander UI runner'''
@@ -323,17 +345,11 @@ class BatchCommander:
             scrollbox.setFrameStyle(container.NoFrame)
 
             # create dock widget
-            dock = ShyDock(section.name)
+            dock = ShyDock('%i. %s' % (len(self.docks) + 1, section.name))
             dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
-            t = QtGui.QPushButton('%i. %s' % (len(self.docks) + 1, section.name))
-            dock.setTitleBarWidget(t)
-            t.setFixedSize(DOCKBUTTONWIDTH, DOCKBUTTONHEIGHT)
             dock.setMinimumWidth(DOCKBUTTONWIDTH)
             dock.setWidget(scrollbox)
             self.docks.append(dock)
-            self.main_window.connect(t,
-                                     QtCore.SIGNAL('clicked()'),
-                                     dock.toggleVisibility)
             self.main_window.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
             # keyboard shortcut to open/close dock
             sc = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+%i" % (len(self.docks))), dock)
@@ -342,7 +358,8 @@ class BatchCommander:
                          dock.toggleVisibility
                          )
             if len(self.docks) > 1:
-                dock.widget().setVisible(False)
+                # collapse all docks except first
+                dock.collapse()
 
     def run(self):
         # make sure input file exists
