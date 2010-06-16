@@ -29,12 +29,12 @@
 
 from __future__ import division
 from PyQt4 import QtGui, QtCore
-from defaults import UNITS, COLOR, TOGGLE, NUMBER, CHOICE
+from defaults import *
 
 
 class Control(QtGui.QWidget):
     '''A Control is a GUI representation of a Field instance.'''
-    def __init__(self, field, parent=None, width=250, height=56):
+    def __init__(self, field, parent=None, width=CONTROLWIDTH, height=CONTROLHEIGHT):
         QtGui.QWidget.__init__(self, parent)
 
         self.width = width
@@ -49,25 +49,24 @@ class Control(QtGui.QWidget):
         if self.field.longname:
             self.longname = self.field.longname
 
-        self.hboxwidget = QtGui.QWidget(self)
-        self.hboxwidget.setGeometry(QtCore.QRect(110, 0, 220, self.height))
-        self.hbox = QtGui.QHBoxLayout(self.hboxwidget)
+        self.containerwidget = QtGui.QWidget(self)
+        self.containerwidget.setGeometry(QtCore.QRect(CONTROLLABELWIDTH, 0, self.width-CONTROLLABELWIDTH, self.height))
+        self.hbox = QtGui.QHBoxLayout(self.containerwidget)
+        self.hbox.setContentsMargins(0,0,0,0)
 
         self.label = QtGui.QLabel(self.longname, self)
-        self.label.setGeometry(QtCore.QRect(0, 0, self.width, self.height))
-        self.label.setAlignment(QtCore.Qt.AlignRight|
-                                QtCore.Qt.AlignVCenter)
-        self.label.setGeometry(0, 0, 110, self.height)
-        self.label.setFont(QtGui.QFont('Lucida Grande', 8))
+        self.label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
+        self.label.setGeometry(0, 0, CONTROLLABELWIDTH, self.height)
+        f = self.label.font()
+        f.setPointSize(CONTROLPOINTSIZE)
+        self.label.setFont(f)
 
         self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, 
                                              QtGui.QSizePolicy.Preferred))
         # create the 'active' checkbox
         self.activebox = QtGui.QCheckBox('', self)
         self.activebox.setChecked(True)
-        self.connect(self.activebox, 
-                     QtCore.SIGNAL('stateChanged(int)'), 
-                     self.set_active)       
+        self.connect(self.activebox, QtCore.SIGNAL('stateChanged(int)'), self.set_active)       
         if self.field.always_active:
             self.activebox.setVisible(False)
         # self.set_active(self.active)
@@ -131,9 +130,7 @@ class ChoiceControl(Control):
         self.choicebox.addItems(self.choices)
         # select the specified value
         self.choicebox.setCurrentIndex(self.choicebox.findText(self.value))
-        self.connect(self.choicebox, 
-                     QtCore.SIGNAL('activated(int)'), 
-                     self.set_value)
+        self.connect(self.choicebox, QtCore.SIGNAL('activated(int)'), self.set_value)
         self.hbox.addWidget(self.choicebox)
         self.hbox.addStretch()
         self.hbox.addWidget(self.activebox)
@@ -195,6 +192,8 @@ class NumberControl(Control):
         self.numberbox.setMinimum(self.min)
         self.numberbox.setMaximum(self.max)
         self.numberbox.setSingleStep(self.increment)
+        # self.numberbox.setStyleSheet("QSpinBox { margin: 0; } QDoubleSpinBox { margin: 0;}")
+        self.numberbox.setFixedHeight(NUMBERBOXHEIGHT)
 
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         coef = pow(10, self.decimals)
@@ -204,20 +203,12 @@ class NumberControl(Control):
         # set widgets to initial value before connecting
         self.set_value(self.value)
         # and now connect the signals
-        self.connect(self.slider, 
-                     QtCore.SIGNAL('sliderReleased()'), 
-                     self.set_value_from_slider)
-        self.connect(self.slider, 
-                     QtCore.SIGNAL('valueChanged(int)'), 
-                     self.update_numberbox_from_slider)
+        self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'), self.set_value_from_slider)
+        self.connect(self.slider, QtCore.SIGNAL('valueChanged(int)'), self.update_numberbox_from_slider)
         if self.floating:
-            self.connect(self.numberbox, 
-                         QtCore.SIGNAL('valueChanged(double)'), 
-                         self.set_value)
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.set_value)
         else:
-            self.connect(self.numberbox, 
-                         QtCore.SIGNAL('valueChanged(int)'), 
-                         self.set_value)
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.set_value)
         self.hbox.addWidget(self.slider)
         self.hbox.addWidget(self.numberbox)
         self.hbox.addWidget(self.activebox)
@@ -231,6 +222,7 @@ class NumberControl(Control):
             self.unit_combobox.connect(self.unit_combobox, 
                                       QtCore.SIGNAL('activated(int)'), 
                                       self.set_unit)
+            self.unit_combobox.setGeometry(UNITCOMBOBOXRECT)
             self.hbox.insertWidget(2, self.unit_combobox)
 
         if not self.active:
@@ -252,23 +244,14 @@ class NumberControl(Control):
         
     def update_numberbox_from_slider(self, val):
         value = val / pow(10, self.decimals)
-        # quick hack to prevent numberbox to sending the valueChanged
-        # signal
-        self.disconnect(self.numberbox, 
-                        QtCore.SIGNAL('valueChanged(double)'), 
-                        self.set_value)
-        self.disconnect(self.numberbox, 
-                        QtCore.SIGNAL('valueChanged(int)'), 
-                        self.set_value)
+        # quick hack to prevent numberbox from sending the valueChanged signal
+        self.disconnect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.set_value)
+        self.disconnect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.set_value)
         self.numberbox.setValue(value)
         if self.floating:
-            self.connect(self.numberbox, 
-                         QtCore.SIGNAL('valueChanged(double)'), 
-                         self.set_value)
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(double)'), self.set_value)
         else:
-            self.connect(self.numberbox, 
-                         QtCore.SIGNAL('valueChanged(int)'), 
-                         self.set_value)
+            self.connect(self.numberbox, QtCore.SIGNAL('valueChanged(int)'), self.set_value)
     def get_value(self):
         return self.value
     
@@ -296,15 +279,11 @@ class ColorChooserControl(Control):
 
         self.colorbutton = QtGui.QPushButton('', self)
         self.colorbutton.setMaximumSize(QtCore.QSize(20, 20))
-        self.connect(self.colorbutton, 
-                     QtCore.SIGNAL('clicked()'), 
-                     self.show_color_dialog)
+        self.connect(self.colorbutton, QtCore.SIGNAL('clicked()'), self.show_color_dialog)
         self.textbox = QtGui.QLineEdit(self)
         self.textbox.setText(self.color.name())
         self.textbox.setObjectName("textbox")
-        self.connect(self.textbox, 
-                     QtCore.SIGNAL('editingFinished()'), 
-                     self.apply_textbox_color)
+        self.connect(self.textbox, QtCore.SIGNAL('editingFinished()'), self.apply_textbox_color)
         self.hbox.addWidget(self.colorbutton)
         self.hbox.addWidget(self.textbox)
         # self.hbox.addStretch(10)
@@ -352,21 +331,17 @@ class ColorChooserControl(Control):
         self.textbox.setEnabled(self.active)
         self.colorbutton.setEnabled(self.active)
 
-def create_control_from_field(field, parent=None, width=250, height=36):
+def create_control_from_field(field, parent=None, width=CONTROLWIDTH, height=CONTROLHEIGHT):
     '''Given a Field instance, an appropriate Control instance is returned.'''
     control = None
     if field.type == TOGGLE:
-        control = ToggleControl(field, parent, 
-                                width=width, height=height)
+        control = ToggleControl(field, parent, width=width, height=height)
     elif field.type == COLOR:
-        control = ColorChooserControl(field, parent, 
-                                      width=width, height=height)
+        control = ColorChooserControl(field, parent, width=width, height=height)
     elif field.type == NUMBER:
-        control = NumberControl(field, parent, 
-                                width=width, height=height)
+        control = NumberControl(field, parent, width=width, height=height)
     elif field.type == CHOICE:
-        control = ChoiceControl(field, parent, 
-                                width=width, height=height)
+        control = ChoiceControl(field, parent, width=width, height=height)
     else:
         print 'Wrong field type: '
         print field.type

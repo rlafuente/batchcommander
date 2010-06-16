@@ -45,8 +45,7 @@ class ShyDock(QtGui.QDockWidget):
     def __init__(self, *args, **kwargs):
         super(ShyDock, self).__init__(*args, **kwargs)
         self.titlewidget = QtGui.QPushButton(args[0])
-        # t.getStyleSheet()
-        self.titlewidget.setStyleSheet('''QPushButton{text-align : left; }''')
+        self.titlewidget.setStyleSheet('''QPushButton{ text-align : left; }''')
         self.titlewidget.setFixedSize(DOCKBUTTONWIDTH, DOCKBUTTONHEIGHT)
         icon = QtGui.QIcon.fromTheme("list-remove")
         self.titlewidget.setIcon(icon)
@@ -273,7 +272,7 @@ class BatchCommander:
                                      QtCore.SIGNAL('activated(int)'),
                                      self.on_selector_changed)
         self.reload_button = QtGui.QPushButton('&Reload')
-        self.reload_button.setGeometry(FIELDWIDTH - 80, 5, 100, 30)
+        self.reload_button.setGeometry(CONTROLWIDTH - 80, 5, 100, 30)
         self.controls_dock.connect(self.reload_button,
                                      QtCore.SIGNAL('clicked()'),
                                      self.reload_current_dataset)
@@ -293,8 +292,8 @@ class BatchCommander:
         self.update_docks()
 
         self.set_immediate_mode(self.immediate_mode)
-        # self.toolbox.setGeometry(0,40,FIELDWIDTH+25,400)
-        # self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,FIELDWIDTH+25,450)
+        # self.toolbox.setGeometry(0,40,CONTROLWIDTH+25,400)
+        # self.controls_window.setGeometry(0,MAINBOXHEIGHT+60,CONTROLWIDTH+25,450)
         # self.controls_window.addToolBar(self.toolbar)
         # self.controls_window.show()
 
@@ -323,15 +322,12 @@ class BatchCommander:
             numberOfFields = len(section.fields)
             # make frame
             container = QtGui.QFrame(scrollbox)
-            container.setGeometry(0,0,FIELDWIDTH, FIELDHEIGHT*numberOfFields)
+            container.setGeometry(0,0,CONTROLWIDTH, CONTROLHEIGHT*numberOfFields)
             fieldCount = 0
             for field in section.fields:
-                control = create_control_from_field(field, parent=container,
-                                                    width=FIELDWIDTH,
-                                                    height=FIELDHEIGHT)
+                control = create_control_from_field(field, parent=container, width=CONTROLWIDTH, height=CONTROLHEIGHT)
                 # place the control in absolute coords -- sucks but works
-                control.setGeometry(0,fieldCount*FIELDHEIGHT,
-                                    FIELDWIDTH, FIELDHEIGHT)
+                control.setGeometry(0, fieldCount*CONTROLHEIGHT, CONTROLWIDTH, CONTROLHEIGHT)
                 self.controls.append(control)
                 self.main_window.connect(control,
                                              QtCore.SIGNAL('fieldEnter(PyQt_PyObject)'),
@@ -343,6 +339,9 @@ class BatchCommander:
             scrollbox.setWidget(container)
             # make scrollbox flat
             scrollbox.setFrameStyle(container.NoFrame)
+            # TODO: following line prevents dock resizing beyond the proper height
+            # should be an option setting to disable this
+            scrollbox.setMinimumHeight(numberOfFields * CONTROLHEIGHT)
 
             # create dock widget
             dock = ShyDock('%i. %s' % (len(self.docks) + 1, section.name))
