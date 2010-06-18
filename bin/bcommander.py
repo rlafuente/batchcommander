@@ -54,7 +54,7 @@ if __name__ == '__main__':
         DEFAULT_COMMAND = '/usr/texbin/pdflatex -halt-on-error %(input_file)s'
     else:
         DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s'
-    DEFAULT_IMMEDIATE_MODE = False
+    DEFAULT_IMMEDIATE_MODE = True
     
     DEFAULT_DATAFILES_DIR = datadir
     DEFAULT_DATAFILES = []

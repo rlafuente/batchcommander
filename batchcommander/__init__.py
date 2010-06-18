@@ -197,19 +197,6 @@ class BatchCommander:
                            QtCore.SIGNAL('clicked()'),
                            self.open_outfile_dialog)
 
-        self.run_button = QtGui.QPushButton('&Run', main_frame)
-        self.run_button.setGeometry(200, 92, 100, 30)
-        main_frame.connect(self.run_button,
-                           QtCore.SIGNAL('clicked()'),
-                           self.run)
-       
-        immediate_box = QtGui.QCheckBox('&Immediate mode', main_frame)
-        immediate_box.setGeometry(10, 92, 150, 30)
-        immediate_box.setChecked(self.immediate_mode)
-        immediate_box.setToolTip('If enabled, Batch Commander will immediately \ngenerate the output file once a control is changed.')
-        main_frame.connect(immediate_box,
-                           QtCore.SIGNAL('stateChanged(int)'),
-                           self.set_immediate_mode)
         self.tab_bar.addTab(main_frame, '&Main')
 
         ### Datafiles tab ###
@@ -277,16 +264,31 @@ class BatchCommander:
         self.reload_button.setGeometry(CONTROLWIDTH - 80, 5, 100, 30)
         self.pdfviewer.connect(self.reload_button, QtCore.SIGNAL('clicked()'), self.reload_current_dataset)
         self.toolbar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
-        self.toolbar.addWidget(self.dataset_selector)
-        self.toolbar.addWidget(self.reload_button)
         self.toolbar.setFloatable(False)
         self.toolbar.setMovable(False)
+        self.toolbar.addWidget(self.dataset_selector)
+        self.toolbar.addWidget(self.reload_button)
+        self.toolbar.addSeparator()
+
+        self.run_button = QtGui.QPushButton('&Run', self.pdfviewer)
+        self.pdfviewer.connect(self.run_button, QtCore.SIGNAL('clicked()'), self.run)
+       
+        immediate_box = QtGui.QCheckBox('&Immediate mode', self.pdfviewer)
+        immediate_box.setChecked(self.immediate_mode)
+        immediate_box.setToolTip('If enabled, Batch Commander will immediately \ngenerate the output file once a control is changed.')
+        self.pdfviewer.connect(immediate_box, QtCore.SIGNAL('stateChanged(int)'), self.set_immediate_mode)
+
+        self.toolbar.addWidget(immediate_box)
+        self.toolbar.addWidget(self.run_button)
+        self.toolbar.addSeparator()
 
         self.actionShow_RightDock = self.right_dock.toggleViewAction()
+        self.actionShow_RightDock.setObjectName("actionShow_RightDock")
         icon1 = QtGui.QIcon.fromTheme("document-properties")
         self.actionShow_RightDock.setIcon(icon1)
         self.toolbar.addAction(self.actionShow_RightDock)
-        # self.actionShow_RightDock.setObjectName("actionShow_RightDock")
+
+
 
         # Check if there are any datafiles
         try:
