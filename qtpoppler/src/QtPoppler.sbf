@@ -1,0 +1,3 @@
+target = QtPoppler
+sources = sipQtPopplercmodule.cpp sipQtPopplerQList0101PopplerEmbeddedFile.cpp sipQtPopplerQList0100PopplerFontInfo.cpp sipQtPopplerQList0101PopplerTextBox.cpp sipQtPopplerPopplerDocument.cpp sipQtPopplerPopplerPage.cpp sipQtPopplerPopplerEmbeddedFile.cpp sipQtPopplerPopplerFontInfo.cpp sipQtPopplerPopplerTextBox.cpp sipQtPopplerPoppler.cpp
+headers = sipAPIQtPoppler.h
