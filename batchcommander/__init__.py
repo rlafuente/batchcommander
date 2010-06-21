@@ -98,6 +98,7 @@ class BatchCommander:
         self.immediate_mode = immediate_mode
         self.command = command
         self.process = QtCore.QProcess()
+        self.queued_run = False
         # self.process.setStandardOutputFile(sys.stdout)
         self.error_log_filename = 'error.log'
         self.output_log_filename = 'output.log'
@@ -373,6 +374,11 @@ class BatchCommander:
                 dock.collapse()
 
     def run(self):
+        # check if process is running
+        if not self.process.state() == self.process.NotRunning:
+            self.queued_run = True
+            return
+
         # make sure input file exists
         if not os.path.exists(self.inputfile):
             self.status.showMessage("Input file doesn't exist!", 2000)
@@ -528,15 +534,6 @@ class BatchCommander:
             finally:
                 fhandle.close()
 
-            '''
-            # on OSX, we open Preview, and if it's already open we poke it for auto-reloading
-            if sys.platform == 'darwin':
-                if sys.version_info < (2,6):
-                    os.system('open %s' % self.outputfile)
-                else:
-                    import subprocess
-                    subprocess.call('open %s' % self.outputfile, shell=True)
-            '''
             if self.is_pdfviewer_open:
                 self.pdfviewer.load(self.outputfile)
 
@@ -549,6 +546,10 @@ class BatchCommander:
             else:
                 timestring = '00:%02d.%d' % (s, elapsed.microseconds)
             self.status.showMessage('Done in ' + timestring + '.')
+            if self.queued_run:
+                # we need to run again
+                self.queued_run = False
+                self.run()
         self.run_button.setEnabled(True)
         # self.toolbox.setEnabled(True)
 
