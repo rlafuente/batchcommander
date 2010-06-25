@@ -35,6 +35,71 @@ if sys.platform == 'darwin':
 else:
     from defaults import *
 
+class PrecisionSlider(QtGui.QSlider):
+    def __init__(self, *args, **kwargs):
+        super(PrecisionSlider, self).__init__(*args, **kwargs)
+
+    def keyPressEvent(self, event):
+        if type(event) == QtGui.QKeyEvent:
+            if event.modifiers() == QtCore.Qt.ControlModifier:
+                if event.key() == QtCore.Qt.Key_Up:
+                    self.setValue(self.value() + self.singleStep() * 10)
+                    return
+                elif event.key() == QtCore.Qt.Key_Down:
+                    self.setValue(self.value() - self.singleStep() * 10)
+                    return
+            elif event.modifiers() == QtCore.Qt.AltModifier:
+                if event.key() == QtCore.Qt.Key_Up:
+                    self.setValue(self.value() + self.singleStep() / 10.)
+                    return
+                elif event.key() == QtCore.Qt.Key_Down:
+                    self.setValue(self.value() - self.singleStep() / 10.)
+                    return
+        QtGui.QSlider.keyPressEvent(self, event)
+
+class PrecisionSpinBox(QtGui.QSpinBox):
+    def __init__(self, *args, **kwargs):
+        super(PrecisionSpinBox, self).__init__(*args, **kwargs)
+
+    def keyPressEvent(self, event):
+        if type(event) == QtGui.QKeyEvent:
+            if event.modifiers() == QtCore.Qt.ControlModifier:
+                if event.key() == QtCore.Qt.Key_Up:
+                    self.setValue(self.value() + self.singleStep() * 10)
+                    return
+                elif event.key() == QtCore.Qt.Key_Down:
+                    self.setValue(self.value() - self.singleStep() * 10)
+                    return
+            elif event.modifiers() == QtCore.Qt.AltModifier:
+                if event.key() == QtCore.Qt.Key_Up:
+                    self.setValue(self.value() + self.singleStep() / 10.)
+                    return
+                elif event.key() == QtCore.Qt.Key_Down:
+                    self.setValue(self.value() - self.singleStep() / 10.)
+                    return
+        QtGui.QSpinBox.keyPressEvent(self, event)
+
+class PrecisionDoubleSpinBox(QtGui.QDoubleSpinBox):
+    def __init__(self, *args, **kwargs):
+        super(PrecisionDoubleSpinBox, self).__init__(*args, **kwargs)
+
+    def keyPressEvent(self, event):
+        if type(event) == QtGui.QKeyEvent:
+            if event.modifiers() == QtCore.Qt.ControlModifier:
+                if event.key() == QtCore.Qt.Key_Up:
+                    self.setValue(self.value() + self.singleStep() * 10)
+                    return
+                elif event.key() == QtCore.Qt.Key_Down:
+                    self.setValue(self.value() - self.singleStep() * 10)
+                    return
+            elif event.modifiers() == QtCore.Qt.AltModifier:
+                if event.key() == QtCore.Qt.Key_Up:
+                    self.setValue(self.value() + self.singleStep() / 10.)
+                    return
+                elif event.key() == QtCore.Qt.Key_Down:
+                    self.setValue(self.value() - self.singleStep() / 10.)
+                    return
+        QtGui.QDoubleSpinBox.keyPressEvent(self, event)
 
 class Control(QtGui.QWidget):
     '''A Control is a GUI representation of a Field instance.'''
@@ -187,19 +252,19 @@ class NumberControl(Control):
             self.floating = True
 
         if self.floating:
-            self.numberbox = QtGui.QDoubleSpinBox(self)
+            self.numberbox = PrecisionDoubleSpinBox(self)
             if not self.decimals:
                 self.decimals = 1
             self.numberbox.setDecimals(self.decimals)
         else:
-            self.numberbox = QtGui.QSpinBox(self)
+            self.numberbox = PrecisionSpinBox(self)
         self.numberbox.setMinimum(self.min)
         self.numberbox.setMaximum(self.max)
         self.numberbox.setSingleStep(self.increment)
         # self.numberbox.setStyleSheet("QSpinBox { margin: 0; } QDoubleSpinBox { margin: 0;}")
         self.numberbox.setFixedHeight(NUMBERBOXHEIGHT)
 
-        self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.slider = PrecisionSlider(QtCore.Qt.Horizontal, self)
         coef = pow(10, self.decimals)
         self.slider.setRange(self.min * coef, self.max * coef)
         self.slider.setSingleStep(self.increment)
