@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="icons/oxygen">
+    <file alias="index.theme">icons/oxygen/index.theme</file>
+
+    <file alias="22x22/applications-system.png">icons/oxygen/applications-system.png</file>
+    <file alias="22x22/folder-brown.png">icons/oxygen/folder-brown.png</file>
+    <file alias="22x22/go-first.png">icons/oxygen/go-first.png</file>
+    <file alias="22x22/go-last.png">icons/oxygen/go-last.png</file>
+    <file alias="22x22/go-next.png">icons/oxygen/go-next.png</file>
+    <file alias="22x22/go-previous.png">icons/oxygen/go-previous.png</file>
+    <file alias="22x22/list-add.png">icons/oxygen/list-add.png</file>
+    <file alias="22x22/list-remove.png">icons/oxygen/list-remove.png</file>
+    <file alias="22x22/preferences-system.png">icons/oxygen/preferences-system.png</file>
+    <file alias="22x22/tools-wizard.png">icons/oxygen/tools-wizard.png</file>
+    <file alias="22x22/view-refresh.png">icons/oxygen/view-refresh.png</file>
+    <file alias="22x22/zoom-in.png">icons/oxygen/zoom-in.png</file>
+    <file alias="22x22/zoom-original.png">icons/oxygen/zoom-original.png</file>
+    <file alias="22x22/zoom-out.png">icons/oxygen/zoom-out.png</file>
+</qresource>
+</RCC>

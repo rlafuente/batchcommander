@@ -42,6 +42,8 @@ cp assets/$backgroundPictureName "$temp_vol_name"/.bg
 mkdir "$temp_vol_name"/BatchCommander
 cp -r datafiles "$temp_vol_name"/BatchCommander/DataFiles
 cp -r examples "$temp_vol_name"/BatchCommander/Examples
+cp -r icons "$temp_vol_name"/BatchCommander/Icons
+cp oxygen.qrc "$temp_vol_name"/BatchCommander/
 echo ' *** Setting DMG metadata... ***'
 echo '
    tell application "Finder"

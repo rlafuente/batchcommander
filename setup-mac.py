@@ -1,5 +1,4 @@
 from setuptools import setup
-import os
 
 setup(
       name='Batch Commander',
@@ -13,7 +12,6 @@ setup(
             "yaml",
             "QtPoppler",
             ],
-
             'excludes': ['PyQt4.QtDesigner', 'PyQt4.QtNetwork', 
               'PyQt4.QtOpenGL', 'PyQt4.QtScript', 'PyQt4.QtSql', 
               'PyQt4.QtTest', 'PyQt4.QtWebKit', 

@@ -104,6 +104,9 @@ class BatchCommander:
         self.output_log_filename = 'output.log'
         self.process.setStandardErrorFile(self.error_log_filename)
         self.process.setStandardOutputFile(self.output_log_filename)
+        if sys.platform == 'darwin':
+            QtGui.QIcon.setThemeSearchPaths(os.path.abspath('~/Documents/BatchCommander/Icons'))
+            QtGui.QIcon.setThemeName('oxygen')
 
         self.app = QtGui.QApplication(sys.argv)
 
@@ -527,12 +530,6 @@ class BatchCommander:
             # the TeX file, so we have to move it to the place specified in the UI
             outfilename = self.inputfile.replace('.tex', '.pdf')
             shutil.move(outfilename, self.outputfile)
-            # the following hack is equivalent to the 'touch' command in bash
-            fhandle = file(self.outputfile, 'a')
-            try:
-                os.utime(self.outputfile, None)
-            finally:
-                fhandle.close()
 
             if self.is_pdfviewer_open:
                 self.pdfviewer.load(self.outputfile)
@@ -552,17 +549,6 @@ class BatchCommander:
                 self.run()
         self.run_button.setEnabled(True)
         # self.toolbox.setEnabled(True)
-
-    def on_pdfview_button_clicked(self):
-        self.is_pdfviewer_open = not self.is_pdfviewer_open
-        if self.is_pdfviewer_open:
-            # show the pdf viewer
-            self.pdfviewer.show()
-            self.pdfview_button.setText('Hide PDF View')
-        else:
-            # hide the pdf viewer
-            self.pdfviewer.hide()
-            self.pdfview_button.setText('Show PDF View')
 
     def add_list_item(self, dataset):
         name = dataset.name
