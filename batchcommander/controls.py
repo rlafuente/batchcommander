@@ -300,6 +300,7 @@ class NumberControl(Control):
 
     def set_unit(self, index):
         self.unit = self.field.unit = self.unit_combobox.itemText(index)
+        self.emit(QtCore.SIGNAL('controlChanged()'))
 
     def set_value(self, value):
         self.value = self.field.value = value
@@ -331,6 +332,7 @@ class NumberControl(Control):
         if self.field.unit:
             self.unit_combobox.setEnabled(self.active)
         self.slider.setEnabled(self.active)
+        self.emit(QtCore.SIGNAL('controlChanged()'))
 
 class ColorChooserControl(Control):
     '''A color chooser control creates a text box where color values can be
