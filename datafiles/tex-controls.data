@@ -200,10 +200,6 @@ Page:
         max: 5
         increment: .1
         decimals: 1
-    - nopagenumbers:
-        longname: No page numbers
-        type: toggle
-        value: off
     - parskip:
         longname: Space between paras
         type: number
