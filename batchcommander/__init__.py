@@ -438,10 +438,13 @@ class BatchCommander:
         self.outputfile = self.outfile_textbox.displayText()
 
     def open_infile_dialog(self):
-        pwd = os.getcwd()
+        if sys.platform == 'darwin':
+            directory = os.path.expanduser('~/Documents/BatchCommander/Examples')
+        else:
+            directory = os.getcwd()
         filename = QtGui.QFileDialog.getOpenFileName(self.main_window,
                                      'Open input file',
-                                     pwd,
+                                     directory,
                                      'TeX/LaTeX files (*.tex)')
         if not filename:
             return False
@@ -455,9 +458,12 @@ class BatchCommander:
                                    os.path.splitext(filename)[0]))
 
     def open_scriptfile_dialog(self):
-        pwd = os.getcwd()
+        if sys.platform == 'darwin':
+            directory = os.path.expanduser('~/Documents/BatchCommander/Examples')
+        else:
+            directory = os.getcwd()
         filename = QtGui.QFileDialog.getSaveFileName(self.main_window, 'Save script file',
-                                     pwd,
+                                     directory,
                                      'TeX/LaTeX style files (*.sty)')
         if not filename:
             return False
@@ -465,9 +471,12 @@ class BatchCommander:
         self.scriptfile_textbox.setText(self.scriptfile)
 
     def open_outfile_dialog(self):
-        pwd = os.getcwd()
+        if sys.platform == 'darwin':
+            directory = os.path.expanduser('~/Documents/BatchCommander/Examples')
+        else:
+            directory = os.getcwd()
         filename = QtGui.QFileDialog.getSaveFileName(self.main_window, 'Save output file',
-                                     pwd,
+                                     directory,
                                      'PDF files (*.pdf)')
         if not filename:
             return False
