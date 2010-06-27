@@ -316,6 +316,9 @@ class PdfViewerWindow(QtGui.QMainWindow):
         self.actionNext_Page.setToolTip(QtGui.QApplication.translate("MainWindow", "Next Page", None, QtGui.QApplication.UnicodeUTF8))
         self.actionFirst_Page.setText(QtGui.QApplication.translate("MainWindow", "First Page", None, QtGui.QApplication.UnicodeUTF8))
         self.actionLast_Page.setText(QtGui.QApplication.translate("MainWindow", "Last Page", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionZoom_In.setText(QtGui.QApplication.translate("MainWindow", "Zoom In", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionZoom_Out.setText(QtGui.QApplication.translate("MainWindow", "Zoom Out", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionZoom_Original.setText(QtGui.QApplication.translate("MainWindow", "Zoom Original", None, QtGui.QApplication.UnicodeUTF8))
 
 
 if __name__ == '__main__':
