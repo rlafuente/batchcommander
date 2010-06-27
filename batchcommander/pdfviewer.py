@@ -46,7 +46,10 @@ class PdfViewerWidget(QtGui.QWidget):
         p = QtGui.QPalette()
         p.setColor(QtGui.QPalette.Background, QtCore.Qt.black);
         self.setPalette(p)
-        self.setGeometry(QtGui.QApplication.desktop().screenGeometry())
+        self.basewidth = 1024
+        self.baseheight = 768
+        self.setGeometry(QtCore.QRect(0, 0, self.basewidth, self.baseheight))
+        # self.setGeometry(QtGui.QApplication.desktop().screenGeometry())
         # self.hide() 
 
     '''
@@ -90,22 +93,30 @@ class PdfViewerWidget(QtGui.QWidget):
         self.update()
         self.cacheImage(self.currentPage + 1)
 
+    def update_frame_size(self):
+        img = self.pdfImages[self.currentPage]
+        self.setFixedWidth(img.width() + 200)
+        self.setFixedHeight(img.height() + 200)
+
     def zoom_in(self):
         if self.isBlanked: return
         self.scale += .2
         self.cacheImage(self.pdfImages[self.currentPage])
+        self.update_frame_size()
         self.update()
 
     def zoom_out(self):
         if self.isBlanked: return
         self.scale -= .2
         self.cacheImage(self.pdfImages[self.currentPage])
+        self.update_frame_size()
         self.update()
 
     def zoom_original(self):
         if self.isBlanked: return
         self.scale = 1.
         self.cacheImage(self.pdfImages[self.currentPage])
+        self.update_frame_size()
         self.update()
 
     def start(self):
@@ -149,10 +160,11 @@ class PdfViewerWidget(QtGui.QWidget):
         # if self.pdfImages[idx] is not None:
         #    return
         page = self.doc.page(idx)
-        ratio = self.scale * self.frameSize().width() / page.pageSize().width()
-        yratio = self.scale * self.frameSize().height() / page.pageSize().height()
-        if yratio < ratio:
-            ratio = yratio   
+        #ratio = self.scale * self.frameSize().width() / page.pageSize().width()
+        #yratio = self.scale * self.frameSize().height() / page.pageSize().height()
+        #if yratio < ratio:
+        #    ratio = yratio   
+        ratio = self.scale
         self.pdfImages[idx] = page.renderToImage(72 * ratio,72 * ratio)
         
    
@@ -233,6 +245,7 @@ class PdfViewerWindow(QtGui.QMainWindow):
         self.pdfViewer.setObjectName("pdfViewer")
 
         self.scrollbox = QtGui.QScrollArea()
+        self.scrollbox.setBackgroundRole(QtGui.QPalette.Dark)
         self.scrollbox.setWidget(self.pdfViewer)
         self.scrollbox.setFrameStyle(QtGui.QFrame.NoFrame)
         size = self.scrollbox.maximumViewportSize()

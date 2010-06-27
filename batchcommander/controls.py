@@ -114,16 +114,17 @@ class Control(QtGui.QWidget):
 
         self.name = self.field.name
 
-        self.longname = self.name
         if self.field.longname:
             self.longname = self.field.longname
+        else:
+            self.longname = self.name
 
         self.containerwidget = QtGui.QWidget(self)
         self.containerwidget.setGeometry(QtCore.QRect(CONTROLLABELWIDTH, 0, self.width-CONTROLLABELWIDTH, self.height))
         self.hbox = QtGui.QHBoxLayout(self.containerwidget)
         self.hbox.setContentsMargins(0,0,0,0)
 
-        self.label = QtGui.QLabel(self.longname, self)
+        self.label = QtGui.QLabel(self.name, self)
         self.label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
         self.label.setGeometry(0, 0, CONTROLLABELWIDTH, self.height)
         f = self.label.font()
@@ -268,6 +269,7 @@ class NumberControl(Control):
         coef = pow(10, self.decimals)
         self.slider.setRange(self.min * coef, self.max * coef)
         self.slider.setSingleStep(self.increment)
+        # self.slider.setFixedWidth(80)
 
         # set widgets to initial value before connecting
         self.set_value(self.value)

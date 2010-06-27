@@ -50,7 +50,8 @@ class ShyDock(QtGui.QDockWidget):
         super(ShyDock, self).__init__(*args, **kwargs)
         self.titlewidget = QtGui.QPushButton(args[0])
         self.titlewidget.setStyleSheet('''QPushButton{ text-align : left; }''')
-        self.titlewidget.setFixedSize(DOCKBUTTONWIDTH, DOCKBUTTONHEIGHT)
+        self.titlewidget.setMinimumWidth(DOCKBUTTONWIDTH)
+        self.titlewidget.setFixedHeight(DOCKBUTTONHEIGHT)
         icon = QtGui.QIcon.fromTheme("list-remove")
         self.titlewidget.setIcon(icon)
         self.titlewidget.setIconSize(DOCKICONSIZE)
@@ -516,7 +517,7 @@ class BatchCommander:
             self.update_docks()
 
     def on_control_entered(self, control):
-        self.control_status.showMessage(control.name)
+        self.control_status.showMessage(control.longname)
 
     def on_control_left(self, field):
         self.control_status.showMessage(' ')
