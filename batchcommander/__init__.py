@@ -55,9 +55,7 @@ class ShyDock(QtGui.QDockWidget):
         self.titlewidget.setIcon(icon)
         self.titlewidget.setIconSize(DOCKICONSIZE)
         self.setTitleBarWidget(self.titlewidget)
-        self.connect(self.titlewidget,
-                     QtCore.SIGNAL('clicked()'),
-                     self.toggleVisibility)
+        self.connect(self.titlewidget, QtCore.SIGNAL('clicked()'), self.toggleVisibility)
 
     def toggleVisibility(self):
         if self.widget().isVisible():
@@ -121,7 +119,6 @@ class BatchCommander:
         # create UI
         self.show_ui()
         self.pdfviewer.show()
-
         self.pdfviewer.zoom_in()
         
 
@@ -246,7 +243,7 @@ class BatchCommander:
         # self.right_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
         self.right_dock.setWidget(self.tab_bar)
         self.main_window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.right_dock)
-        self.right_dock.show()
+        self.right_dock.hide()
 
         # self.main_window.setGeometry(0, 60, MAINBOXWIDTH+40, MAINBOXHEIGHT)
         self.main_window.connect(self.process, QtCore.SIGNAL('finished(int)'), self.on_process_finished)
