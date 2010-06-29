@@ -138,7 +138,11 @@ class Field:
         else:
             cmd = ' ' * 18
             cmd += '\\'
-            cmd += self.name + '=' + str(value)      
+            if self.decimals:
+                val = str(value)
+            else:
+                val = str(int(value))
+            cmd += self.name + '=' + val
             if self.unit:
                 cmd += self.unit
             cmd += '\n'
