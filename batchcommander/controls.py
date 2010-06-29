@@ -249,7 +249,7 @@ class NumberControl(Control):
                 type(self.min) == float or \
                 type(self.max) == float or \
                 type(self.increment) == float or \
-                self.decimals:
+                bool(int(self.decimals)):
             self.floating = True
 
         if self.floating:
@@ -262,7 +262,6 @@ class NumberControl(Control):
         self.numberbox.setMinimum(self.min)
         self.numberbox.setMaximum(self.max)
         self.numberbox.setSingleStep(self.increment)
-        # self.numberbox.setStyleSheet("QSpinBox { margin: 0; } QDoubleSpinBox { margin: 0;}")
         self.numberbox.setFixedHeight(NUMBERBOXHEIGHT)
 
         self.slider = PrecisionSlider(QtCore.Qt.Horizontal, self)
