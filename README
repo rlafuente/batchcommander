@@ -22,6 +22,7 @@ numbers are the minimum version required for each package.
   * Qt 4.3
   * PyQt 4.3
   * PyYAML 3.05
+  * Poppler-Qt
 
   * and any distribution of TeX/LaTeX that supports the pdftex command.
 
@@ -31,11 +32,11 @@ commands to get them up and running:
 
   * Debian-based distros (Debian, Ubuntu):
 
-    sudo aptitude install python-yaml python-qt4
+    sudo apt-get install python-yaml python-qt4 libpoppler-qt4-3
 
   * Fedora:
 
-    sudo yum (...)
+    sudo yum install PyYAML PyQt4 poppler-qt
 
 Installing in Mac OS X
 ======================
