@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, QtSvg
 import sys, os
-import QtPoppler
+try:
+    import popplerqt4 as QtPoppler
+except ImportError:
+    import QtPoppler
 
 '''
 PDF Viewer code taken from OpenLP by Raoul Snyman and others.
@@ -178,7 +181,6 @@ class PdfViewerWidget(QtGui.QWidget):
             img = self.getImage(idx)
         return img
 
-    
 class PdfViewerWindow(QtGui.QMainWindow):
     def __init__(self, filename=None, *args, **kwargs):
         super(PdfViewerWindow, self).__init__(*args, **kwargs)
@@ -329,6 +331,157 @@ class PdfViewerWindow(QtGui.QMainWindow):
         self.actionNext_Page.setToolTip(QtGui.QApplication.translate("MainWindow", "Next Page", None, QtGui.QApplication.UnicodeUTF8))
         self.actionFirst_Page.setText(QtGui.QApplication.translate("MainWindow", "First Page", None, QtGui.QApplication.UnicodeUTF8))
         self.actionLast_Page.setText(QtGui.QApplication.translate("MainWindow", "Last Page", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionZoom_In.setText(QtGui.QApplication.translate("MainWindow", "Zoom In", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionZoom_Out.setText(QtGui.QApplication.translate("MainWindow", "Zoom Out", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionZoom_Original.setText(QtGui.QApplication.translate("MainWindow", "Zoom Original", None, QtGui.QApplication.UnicodeUTF8))
+
+
+class SvgViewerWindow(QtGui.QMainWindow):
+    def __init__(self, filename=None, *args, **kwargs):
+        super(SvgViewerWindow, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+        self.filename = filename
+        if self.filename:
+            self.svgViewer.load(self.filename)
+        self.show()
+
+    def load(self, filename):
+        # if filename == self.filename:
+            # page = self.svgViewer.currentPage
+        # else:
+            # page = 1
+        self.filename = filename
+        # self.svgViewer.unBlank()
+        self.svgViewer.load(self.filename)
+        # self.svgViewer.showPage(page)
+        
+        svg_size = self.svgViewer.sizeHint();
+        svg_size.scale(256, 256, QtCore.Qt.KeepAspectRatioByExpanding);
+        self.svgViewer.setMinimumSize(svg_size);
+        self.svgViewer.setMaximumSize(svg_size);
+
+    def reload(self):
+        # currentpage = self.svgViewer.currentPage
+        self.svgViewer.load(self.filename)
+        # self.svgViewer.showPage(currentpage)
+
+    def zoom_in(self):
+        self.svgViewer.zoom_in()
+    def zoom_out(self):
+        self.svgViewer.zoom_out()
+    def zoom_original(self):
+        self.svgViewer.zoom_original()
+
+    def keyPressEvent(self, event):
+        if (event.key() == QtCore.Qt.Key_Plus):
+            self.zoom_in()
+        elif (event.key() == QtCore.Qt.Key_Minus):
+            self.zoom_out()
+        else:
+            QtGui.QMainWindow.keyPressEvent(self, event)
+
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(333, 541)
+        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.svgViewer = QtSvg.QSvgWidget(self.centralwidget)
+        self.svgViewer.setObjectName("svgViewer")
+        pal = QtGui.QPalette(self.svgViewer.palette())
+        pal.setColor(QtGui.QPalette.Window, QtGui.QColor('white'))
+        self.svgViewer.setPalette(pal)
+        self.svgViewer.setAutoFillBackground(True)
+
+
+
+
+        self.scrollbox = QtGui.QScrollArea()
+        self.scrollbox.setBackgroundRole(QtGui.QPalette.Dark)
+        self.scrollbox.setWidget(self.svgViewer)
+        self.scrollbox.setFrameStyle(QtGui.QFrame.NoFrame)
+        size = self.scrollbox.maximumViewportSize()
+        x = size.width()
+        y = size.height()
+        self.scrollbox.horizontalScrollBar().setValue(x/2)
+        self.scrollbox.verticalScrollBar().setValue(y/2)
+        self.verticalLayout.addWidget(self.scrollbox)
+
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        self.toolBar = QtGui.QToolBar(MainWindow)
+        self.toolBar.setMovable(False)
+        self.toolBar.setObjectName("toolBar")
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        MainWindow.insertToolBarBreak(self.toolBar)
+
+        # self.actionPrevious_Page = QtGui.QAction(MainWindow)
+        # icon = QtGui.QIcon.fromTheme("go-previous")
+        # self.actionPrevious_Page.setIcon(icon)
+        # self.actionPrevious_Page.setObjectName("actionPrevious_Page")
+        # self.actionPrevious_Page.triggered.connect(self.previous_page)
+
+        # self.actionNext_Page = QtGui.QAction(MainWindow)
+        # icon = QtGui.QIcon.fromTheme("go-next")
+        # self.actionNext_Page.setIcon(icon)
+        # self.actionNext_Page.setObjectName("actionNextPage")
+        # self.actionNext_Page.triggered.connect(self.next_page)
+
+        # self.actionFirst_Page = QtGui.QAction(MainWindow)
+        # icon = QtGui.QIcon.fromTheme("go-first")
+        # self.actionFirst_Page.setIcon(icon)
+        # self.actionFirst_Page.setObjectName("actionFirst_Page")
+        # self.actionFirst_Page.triggered.connect(self.first_page)
+
+        # self.actionLast_Page = QtGui.QAction(MainWindow)
+        # icon = QtGui.QIcon.fromTheme("go-last")
+        # self.actionLast_Page.setIcon(icon)
+        # self.actionLast_Page.setObjectName("actionLast_Page")
+        # self.actionLast_Page.triggered.connect(self.last_page)
+
+        self.actionZoom_In = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon.fromTheme("zoom-in")
+        self.actionZoom_In.setIcon(icon)
+        self.actionZoom_In.setObjectName("actionZoom_In")
+        self.actionZoom_In.triggered.connect(self.zoom_in)
+
+        self.actionZoom_Out = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon.fromTheme("zoom-out")
+        self.actionZoom_Out.setIcon(icon)
+        self.actionZoom_Out.setObjectName("actionZoom_Out")
+        self.actionZoom_Out.triggered.connect(self.zoom_out)
+
+        self.actionZoom_Original = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon.fromTheme("zoom-original")
+        self.actionZoom_Original.setIcon(icon)
+        self.actionZoom_Original.setObjectName("actionZoom_Original")
+        self.actionZoom_Original.triggered.connect(self.zoom_original)
+
+        # self.toolBar.addAction(self.actionFirst_Page)
+        # self.toolBar.addAction(self.actionPrevious_Page)
+        # self.toolBar.addAction(self.actionNext_Page)
+        # self.toolBar.addAction(self.actionLast_Page)
+        # self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionZoom_In)
+        self.toolBar.addAction(self.actionZoom_Original)
+        self.toolBar.addAction(self.actionZoom_Out)
+        self.toolBar.addSeparator()
+
+        self.retranslateUi(MainWindow)
+        # QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow",
+            "Batch Commander", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
+        # self.actionPrevious_Page.setText(QtGui.QApplication.translate("MainWindow", "Previous Page", None, QtGui.QApplication.UnicodeUTF8))
+        # self.actionNext_Page.setText(QtGui.QApplication.translate("MainWindow", "Next Page", None, QtGui.QApplication.UnicodeUTF8))
+        # self.actionNext_Page.setToolTip(QtGui.QApplication.translate("MainWindow", "Next Page", None, QtGui.QApplication.UnicodeUTF8))
+        # self.actionFirst_Page.setText(QtGui.QApplication.translate("MainWindow", "First Page", None, QtGui.QApplication.UnicodeUTF8))
+        # self.actionLast_Page.setText(QtGui.QApplication.translate("MainWindow", "Last Page", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoom_In.setText(QtGui.QApplication.translate("MainWindow", "Zoom In", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoom_Out.setText(QtGui.QApplication.translate("MainWindow", "Zoom Out", None, QtGui.QApplication.UnicodeUTF8))
         self.actionZoom_Original.setText(QtGui.QApplication.translate("MainWindow", "Zoom Original", None, QtGui.QApplication.UnicodeUTF8))

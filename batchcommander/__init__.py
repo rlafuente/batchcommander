@@ -35,7 +35,7 @@ from PyQt4 import QtGui, QtCore
 
 from batchcommander.controls import create_control_from_field
 from batchcommander.parser import DataSet
-from batchcommander.pdfviewer import PdfViewerWindow
+from batchcommander.pdfviewer import PdfViewerWindow, SvgViewerWindow
 if sys.platform == 'darwin':
     from batchcommander.defaultsmac import *
 else:
@@ -84,6 +84,7 @@ class BatchCommander:
                  outputfile=None,
                  command=None,
                  immediate_mode=None,
+                 viewer=VIEWER_PDF,
                  output_mode=MODE_TEX):
         self.datasets = []
         for path in datafiles:
@@ -92,6 +93,7 @@ class BatchCommander:
         self.scriptfile = scriptfile
         self.outputfile = outputfile
         self.outputmode = output_mode
+        self.viewer = viewer
         self.is_pdfviewer_open = True
         self.sections = None
         self.immediate_mode = immediate_mode
@@ -109,7 +111,12 @@ class BatchCommander:
 
         self.app = QtGui.QApplication(sys.argv)
 
-        self.pdfviewer = PdfViewerWindow()
+        if self.viewer == VIEWER_PDF:
+            self.pdfviewer = PdfViewerWindow()
+        elif self.viewer == VIEWER_SVG:
+            self.pdfviewer = SvgViewerWindow()
+
+
 
         # we need this here for now, otherwise it borks
         # this will refer to the combobox in the control window
@@ -234,11 +241,34 @@ class BatchCommander:
 
         self.tab_bar.addTab(data_frame, '&Data files')
 
-        ### Options tab ###
-        # options_frame = QtGui.QFrame()
-        # self.tab_bar.addTab(options_frame, '&Options')
+        ### Mode tab ###
+
+        # mode_frame = QtGui.QFrame()
+        # 
+        # mode_box = QtGui.QGroupBox(mode_frame)
+        # mode_box.setGeometry(QtCore.QRect(0, 0, 181, 121))
+
+        # self.tex_button = QtGui.QRadioButton('TeX', mode_box)
+        # self.tex_button.setGeometry(QtCore.QRect(40, 30, 84, 18))
+        # self.pattern_button = QtGui.QRadioButton('Pattern', mode_box)
+        # self.pattern_button.setGeometry(QtCore.QRect(40, 60, 84, 18))
+
+        # reload_button = QtGui.QPushButton('Reload', mode_box)
+        # reload_button.setGeometry(40,90,100,20)
+        # #main_frame.connect(reload_button,
+        # #                   QtCore.SIGNAL('clicked()'),
+        # #                   self.reload_mode)
+
+        # self.mode_label = QtGui.QLabel('Current mode (click Reload to set)', mode_frame)
+        # self.mode_label.setGeometry(40, 120, 300, 30)
+
+        # self.tab_bar.addTab(mode_frame, '&Program mode')
+
+
+
 
         ### wrap up main window ###
+
         self.right_dock = QtGui.QDockWidget('File control', self.main_window)
         self.right_dock.setMinimumWidth(RIGHTDOCKWIDTH)
         # self.right_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
@@ -381,9 +411,9 @@ class BatchCommander:
             return
 
         # make sure input file exists
-        if not os.path.exists(self.inputfile):
-            self.status.showMessage("Input file doesn't exist!", 2000)
-            return
+        # if not os.path.exists(self.inputfile):
+        #    self.status.showMessage("Input file doesn't exist!", 2000)
+        #    return
         self.run_button.setDisabled(True)
         # self.toolbox.setDisabled(True)
         self.status.showMessage('Generating %s...' % (self.scriptfile))
@@ -406,18 +436,28 @@ class BatchCommander:
                         for section in dataset.sections:
                             section.output_pythonvar(scriptfile)
 
-            scriptfile.close()
-            self.status.showMessage('Outputting %s...' % (self.outputfile))
-            self.process.start(self.command % {'input_file': self.inputfile})
+            elif self.outputmode == MODE_PATTERN:
+                # scriptfile.write('{\n')
 
-        except NotInstalledError:
-            self.run_button.setEnabled(True)
-            # self.toolbox.setEnabled(True)
-            self.status.showMessage('Failed :(')
+                for dataset in self.datasets:
+                    if dataset.active:
+                        for section in dataset.sections:
+                            section.output_pattern_json(scriptfile)
+                # scriptfile.write('}\n')
+
+            scriptfile.close()
+
+            self.status.showMessage('Outputting %s...' % (self.outputfile))
+            if self.outputmode == MODE_PATTERN: 
+                self.process.start(self.command % {'script_file': self.scriptfile})
+            else:
+                self.process.start(self.command % {'input_file': self.inputfile})
+
         except:
             self.run_button.setEnabled(True)
             # self.toolbox.setEnabled(True)
             self.status.showMessage('Failed :(')
+            raise
             
 
     #### Callbacks ####
@@ -499,6 +539,15 @@ class BatchCommander:
                                    QtCore.SIGNAL('controlChanged()'),
                                    self.run)
 
+    def change_mode(self):
+        radios = [self.tex_button, self.pattern_button]        
+        if self.tex_button.isChecked():
+            self.outputmode = 'tex'
+        elif self.pattern_button.isChecked():
+            self.outputmode = 'pattern'
+        self.mode_label.setText('Selected mode: %s' % self.outputmode)
+        self.set_mode(self.outputmode)
+
     def on_list_item_changed(self, item):
         value = bool(item.checkState())
         for dataset in self.datasets:
@@ -537,8 +586,14 @@ class BatchCommander:
         else:
             # pdflatex creates the output pdf inside the directory that contains
             # the TeX file, so we have to move it to the place specified in the UI
-            outfilename = self.inputfile.replace('.tex', '.pdf')
-            shutil.move(outfilename, self.outputfile)
+            if self.outputmode == 'tex':
+                outfilename = self.inputfile.replace('.tex', '.pdf')
+                shutil.move(outfilename, self.outputfile)
+            #else:
+            #    os.system('/home/rlafuente/bin/svg2pdf %s %s' % (self.outputfile, self.outputfile.replace('svg', 'pdf')))
+
+            # from time import sleep
+            # sleep(4)
 
             if self.is_pdfviewer_open:
                 self.pdfviewer.load(self.outputfile)

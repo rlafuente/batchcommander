@@ -1,0 +1,361 @@
+Hyphenation:
+    - hyphenpenalty:
+        longname: Hyphenate or not
+        type: number
+        value: 50
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - exhyphenpenalty:
+        longname: Explicit hyphens
+        type: number
+        value: 50
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - doublehyphendemerits:
+        longname: Hyphenate adj. lines
+        type: number
+        value: 10000
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - finalhyphendemerits:
+        longname: Last line of para
+        type: number
+        value: 5000
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - lefthyphenmin:
+        longname: Before hyphen
+        type: number
+        value: 2
+        min: 0
+        max: 5
+        increment: 1
+        decimals: 0
+    - righthyphenmin:
+        longname: After hyphen
+        type: number
+        value: 3
+        min: 0
+        max: 5
+        increment: 1
+        decimals: 0
+
+Paragraph:
+    - parindent:
+        longname: Paragraph indentation
+        type: number
+        value: 12
+        unit: pt
+        min: -12
+        max: 12
+        increment: 1
+        decimals: 1
+    - hsize:
+        longname: Text width
+        type: number
+        value: 15
+        unit: cm
+        min: 5
+        max: 20
+        increment: .5
+        decimals: 1
+    - baselineskip:
+        longname: baselineskip
+        type: number
+        value: 12
+        unit: pt
+        min: 1
+        max: 40
+        increment: 1
+        decimals: 1
+    - lineskiplimit:
+        longname: Lines too close
+        type: number
+        value: 1
+        unit: pt
+        min: 0
+        max: 5
+        increment: 1
+        decimals: 1
+    - lineskip:
+        longname: Extra spacing
+        type: number
+        value: 2
+        unit: pt
+        min: 0
+        max: 5
+        increment: 1
+        decimals: 1
+    - offinterlineskip:
+        longname: No interline glue
+        type: toggle
+        value: off
+    - overfullrule:
+        longname: Show overful paras
+        type: number
+        value: 5
+        unit: pt
+        min: 0
+        max: 10
+        increment: 1
+        decimals: 1
+    - hfuzz:
+        longname: Leniency in overfull
+        type: number
+        value: .1
+        unit: pt
+        min: 0
+        max: 5
+        increment: .1
+        decimals: 1
+    - raggedright:
+        longname: Ragged right margin
+        type: toggle
+        value: off
+
+Line Breaking:
+    - pretolerance:
+        longname: First iteration
+        type: number
+        value: 100
+        min: 0
+        max: 10000
+        increment: 100
+        decimals: 0
+    - tolerance:
+        longname: Second iteration
+        type: number
+        value: 200
+        min: 0
+        max: 10000
+        increment: 100
+        decimals: 0
+    - emergencystretch:
+        longname: Allow spacing
+        type: number
+        value: 0
+        unit: pt
+        min: 0
+        max: 30
+        increment: 2
+        decimals: 0
+    - looseness:
+        longname: Make para looser
+        type: number
+        value: 0
+        min: -2
+        max: 2
+        increment: 1
+        decimals: 0
+    - linepenalty:
+        longname: Try for shorter paras
+        type: number
+        value: 10
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - adjdemerits:
+        longname: Adjacent lines compat.
+        type: number
+        value: 10000
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+
+Page:
+    - vsize:
+        longname: Text height
+        type: number
+        value: 8.9
+        unit: in
+        min: 1
+        max: 20
+        increment: .1
+        decimals: 1
+    - hoffset:
+        longname: Offset page horiz
+        type: number
+        value: 0
+        unit: in
+        min: -5
+        max: 5
+        increment: .1
+        decimals: 1
+    - voffset:
+        longname: Offset page vert
+        type: number
+        value: 0
+        unit: in
+        min: -5
+        max: 5
+        increment: .1
+        decimals: 1
+    - parskip:
+        longname: Space between paras
+        type: number
+        value: 0
+        unit: pt
+        min: 0
+        max: 12
+        increment: 1
+        decimals: 1
+
+Page breaking:
+    - interlinepenalty:
+        longname: Page breaks in para
+        type: number
+        value: 0
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - clubpenalty:
+        longname: After 1st line
+        type: number
+        value: 150
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - widowpenalty:
+        longname: Before last line
+        type: number
+        value: 150
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - displaywidowpenalty:
+        longname: Para befor display
+        type: number
+        value: 50
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - predisplaypenalty:
+        longname: Before display
+        type: number
+        value: 10000
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - vfuzz:
+        longname: Leniency in overfull
+        type: number
+        value: .1
+        unit: pt
+        min: 0
+        max: 5
+        increment: .1
+        decimals: 1
+
+Math:
+    - binoppenalty:
+        longname: Break at binop
+        type: number
+        value: 700
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - relpenalty:
+        longname: Break at relation
+        type: number
+        value: 500
+        min: -10000
+        max: 10000
+        increment: 100
+        decimals: 0
+    - abovedisplayskip:
+        longname: Space before math
+        type: number
+        value: 12
+        unit: pt
+        min: 0
+        max: 30
+        increment: 1
+        decimals: 1
+    - belowdisplayskip:
+        longname: Space after math
+        type: number
+        value: 12
+        unit: pt
+        min: 0
+        max: 30
+        increment: 1
+        decimals: 1
+    - abovedisplayshortskip:
+        longname: Short line above
+        type: number
+        value: 0
+        unit: pt
+        min: 0
+        max: 10
+        increment: 1
+        decimals: 1
+    - belowdisplayshortskip:
+        longname: Short line above
+        type: number
+        value: 7
+        unit: pt
+        min: 0
+        max: 30
+        increment: 1
+        decimals: 1
+    - mathsurround:
+        longname: Around inline math
+        type: number
+        value: 0
+        unit: pt
+        min: 0
+        max: 10
+        increment: 1
+        decimals: 1
+    - nulldelimiterspace:
+        longname: Width of null delimiter
+        type: number
+        value: 1.2
+        unit: pt
+        min: 0
+        max: 10
+        increment: .1
+        decimals: 1
+    - scriptspace:
+        longname: Around sub/superscript
+        type: number
+        value: .5
+        unit: pt
+        min: 0
+        max: 10
+        increment: .5
+        decimals: 1
+    - delimiterfactor:
+        longname: Ratio with math
+        type: number
+        value: 901
+        min: 0
+        max: 10000
+        increment: 50
+        decimals: 0
+    - delimitershortfall:
+        longname: Reduction of delim
+        type: number
+        value: 5
+        unit: pt
+        min: 0
+        max: 30
+        increment: 1
+        decimals: 0
+

@@ -31,13 +31,14 @@
 
 import sys, os
 from batchcommander import BatchCommander
+from batchcommander.defaults import VIEWER_SVG
 
 if __name__ == '__main__':
     if sys.platform == 'linux2':
         homedir = os.path.expanduser("~")
         localdir = os.path.join(homedir, '.batchcommander/')
-        datadir = os.path.join(localdir, 'datafiles/tex/')
-        examplesdir = os.path.join(localdir, 'examples/tex/')
+        datadir = os.path.join(localdir, 'datafiles/pattern/')
+        examplesdir = os.path.join(localdir, 'examples/pattern/')
     elif sys.platform == 'darwin':
         homedir = os.path.expanduser("~")
         localdir = os.path.join(homedir, 'Documents', 'BatchCommander/')
@@ -46,14 +47,14 @@ if __name__ == '__main__':
         # have the files be output to the desktop in OSX
         homedir = os.path.join(homedir, 'Desktop/')
 
-    DEFAULT_INPUTFILE = os.path.join(examplesdir, 'sarovar.tex')
-    DEFAULT_SCRIPTFILE = os.path.join(examplesdir, 'river_valley.sty')
-    DEFAULT_OUTPUTFILE = os.path.join(homedir, 'output.pdf')
+    DEFAULT_INPUTFILE = os.path.join(examplesdir, 'sample-pattern.json')
+    DEFAULT_SCRIPTFILE = os.path.join('/home/rlafuente/Desktop/sample-pattern.json')
+    DEFAULT_OUTPUTFILE = os.path.join('/home/rlafuente/Desktop/pattern-output.svg')
     # MacTeX has a specific place for the TeX binaries
     if sys.platform == 'darwin':
         DEFAULT_COMMAND = '/usr/texbin/pdflatex -halt-on-error %(input_file)s'
     else:
-        DEFAULT_COMMAND = 'pdflatex -halt-on-error %(input_file)s'
+        DEFAULT_COMMAND = '/home/rlafuente/Desktop/susan/standalone/mkpattern --client=%(script_file)s --pattern=/home/rlafuente/Desktop/susan/standalone/SamplePattern_Pants1.py --styles=/home/rlafuente/Desktop/susan/standalone/tmtp_styles.json /home/rlafuente/Desktop/pattern-output.svg' 
     DEFAULT_IMMEDIATE_MODE = True
     
     DEFAULT_DATAFILES_DIR = datadir
@@ -72,6 +73,7 @@ if __name__ == '__main__':
                         outputfile=DEFAULT_OUTPUTFILE,
                         command=DEFAULT_COMMAND,
                         immediate_mode=DEFAULT_IMMEDIATE_MODE,
-                        output_mode='tex',
+                        viewer=VIEWER_SVG,
+                        output_mode='pattern',
                         )
     bc.show_ui()

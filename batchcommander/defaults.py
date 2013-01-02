@@ -5,9 +5,14 @@ TOGGLE = 'toggle'
 COLOR = 'color'
 NUMBER = 'number'
 CHOICE = 'choice'
+TEXT = 'text'
 
 MODE_TEX = 'tex'
 MODE_PYTHON = 'python' 
+MODE_PATTERN = 'pattern' 
+
+VIEWER_PDF = 'pdf'
+VIEWER_SVG = 'svg'
 
 MAINBOXWIDTH = 370
 MAINBOXHEIGHT = 200

@@ -1,0 +1,149 @@
+General options:
+    - pdftex:
+        longname: Use PDFTeX
+        type: toggle
+        value: on
+    - draft:
+        longname: hypertext off
+        type: toggle
+        value: off
+    - page_size:
+        longname: Page size
+        type: choice
+        value: a4paper
+        choices: a4paper, a5paper, b5paper, letterpaper, legalpaper, executivepaper, setpagesize
+    - debug:
+        longname: Extra diagnostics in log
+        type: toggle
+        value: off
+    - implicit:
+        longname: redefine LaTeX internals
+        type: toggle
+        value: on
+    - hypertexnames:
+        longname: guessable link names
+        type: toggle
+        value: on
+
+Links:
+    - breaklinks:
+        longname: Break over lines
+        type: toggle
+        value: off
+    - colorlinks:
+        longname: Use color for links
+        type: toggle
+        value: off
+    - linkcolor:
+        longname: Internal links
+        type: color
+        value: red
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - anchorcolor:
+        longname: Anchor text
+        type: color
+        value: black
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - citecolor:
+        longname: Citation links
+        type: color
+        value: green
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - filecolor:
+        longname: URLs for local files
+        type: color
+        value: magenta
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - menucolor:
+        longname: Acrobat menu items
+        type: color
+        value: red
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - pagecolor:
+        longname: Links to other pages
+        type: color
+        value: red
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - urlcolor:
+        longname: Linked URLs
+        type: color
+        value: cyan
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - frenchlinks:
+        longname: Small caps for links
+        type: toggle
+        value: off
+    - raiselinks:
+        longname: Use correct height for links
+        type: toggle
+        value: on
+    - pageanchor:
+        longname: create link for every page
+        type: toggle
+        value: off
+    - plainpages:
+        longname: use arabic no. for page links
+        type: toggle
+        value: on
+    - nesting:
+        longname: nest links (no drivers yet)
+        type: toggle
+        value: off
+
+Extension options:
+    - extension:
+        longname: extension for xr package
+        type: choice
+        value: dvi
+        choices: dvi
+    - backref:
+        longname: backlink for bibitems
+        type: toggle
+        value: off
+    - hyperindex:
+        longname: hyperlinks for index entries
+        type: toggle
+        value: off
+    - encap:
+        longname: set encap char for hyperindex
+        type: toggle
+        value: off
+    - linktocpage:
+        longname: page no is link in TOC
+        type: toggle
+        value: off
+
+PDF display:
+    - bookmarks:
+        longname: Create bookmarks
+        type: toggle
+        value: off
+    - bookmarksopen:
+        longname: Show bookmarks open
+        type: toggle
+        value: off
+    - bookmarksopenlevel:
+        longname: Level to which bookmarks open
+        type: choice
+        value: 1
+        choices: 0, 1, 2, 3, 4, 5
+    - bookmarksnumbered:
+        longname: Include section numbers
+        type: toggle
+        value: off
+    - pdfhighlight:
+        longname: behavior of link buttons
+        type: choice
+        value: /I
+        choices: /I, /N, /O, /P
+    - citebordercolor:
+        longname: box around citations
+        type: color
+        value: red
+        choices: red, green, blue, cyan, magenta, yellow, black
+    - filebordercolor:
+        longname: box around file links
+        type: color
+        value: blue
+        choices: red, green, blue, cyan, magenta, yellow, black
+

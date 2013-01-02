@@ -29,7 +29,7 @@
 
 import sys, os
 import yaml
-from defaults import TOGGLE, COLOR, NUMBER, CHOICE
+from defaults import TOGGLE, COLOR, NUMBER, CHOICE, TEXT
 
 class DataSet:
     '''Represents the contents of a .data file.
@@ -81,6 +81,18 @@ class Section:
             if field.active:
                 outfile.write(field.output_pythonvar())
 
+    def output_pattern_json(self, outfile=sys.stdout):
+        out = '{'
+        for i, field in enumerate(self.fields):
+            if i != len(self.fields)-1:
+                if field.active:
+                    out += field.output_pattern_json()
+            else:
+                if field.active:
+                    out += field.output_pattern_json(last=True)
+        out += '}'
+        outfile.write(out)
+
     def dump(self, outfile=sys.stdout):
         '''Writes a YAML representation of all the fields in this section 
         into a file.'''
@@ -104,7 +116,7 @@ class Field:
 
         self.type = propdict['type']
         # set type-specific attributes for this field
-        if self.type == TOGGLE or self.type == COLOR:
+        if self.type == TOGGLE or self.type == COLOR or self.type == TEXT:
             pass
         elif self.type == CHOICE:
             self.choices = []
@@ -135,6 +147,12 @@ class Field:
                 cmd += self.name
                 cmd += '\n'
                 return cmd
+        elif self.type == CHOICE:
+            cmd = ' ' * 18
+            cmd += '\\'
+            cmd += self.name + '=' + str(value)
+            cmd += '\n'
+            return cmd
         else:
             cmd = ' ' * 18
             cmd += '\\'
@@ -157,6 +175,26 @@ class Field:
             value = str(self.value)
         cmd = self.name + ' = ' + value + '\n'
         return cmd
+
+    def output_pattern_json(self, last=False):
+        '''Returns a JSON representation of the field appropriate for genpattern.'''
+        value = '  "%s": {\n' % str(self.name)
+
+        if self.type == NUMBER:
+            value += '        "value": "%s",\n' % str(self.value)
+            value += '        "type": "float",\n'
+            value += '        "gui_text": "%s"\n' % str(self.longname)
+
+        elif self.type == TEXT:
+            value += '        "value": "%s",\n' % str(self.value)
+            value += '        "type": "string",\n'
+            value += '        "gui_text": "%s"\n' % str(self.longname)
+
+        if last:
+            value += '        }\n'
+        else:
+            value += '        },\n'
+        return value
 
     def dump(self, outfile=sys.stdout):
         ''' Write a YAML representation of the Field data into a file.

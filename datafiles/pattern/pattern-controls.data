@@ -1,0 +1,57 @@
+Measurements:
+    - customername:
+        longname: Client Name
+        type: text
+        value: Jane Doe
+    - outside_leg:
+        longname: Outside Leg
+        type: number
+        value: 112
+        min: 10
+        max: 300
+        increment: 1
+        decimals: 1
+    - inside_leg:
+        longname: Inside Leg
+        type: number
+        value: 80
+        min: 10
+        max: 300
+        increment: 1
+        decimals: 1
+    - waist:
+        longname: Waist
+        type: number
+        value: 86
+        min: 10
+        max: 300
+        increment: 1
+        decimals: 1
+    - seat:
+        longname: Seat
+        type: number
+        value: 102
+        min: 10
+        max: 300
+        increment: 1
+        decimals: 1
+    - knee:
+        longname: Knee
+        type: number
+        value: 50
+        min: 10
+        max: 300
+        increment: 1
+        decimals: 1
+    - bottom_width:
+        longname: Waist
+        type: number
+        value: 43
+        min: 10
+        max: 300
+        increment: 1
+        decimals: 1
+    - measureunit:
+        longname: Measurement unit
+        value: cm
+        type: text

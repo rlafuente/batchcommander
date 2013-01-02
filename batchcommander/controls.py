@@ -403,6 +403,40 @@ class ColorChooserControl(Control):
         self.textbox.setEnabled(self.active)
         self.colorbutton.setEnabled(self.active)
 
+class TextControl(Control):
+    '''A Text control contains a simple textbox, representing a TEXT field.'''
+    def __init__(self, *args, **kwargs):
+        Control.__init__(self, *args, **kwargs)
+
+        self.textbox = QtGui.QLineEdit(self)
+
+        self.textbox.setText(self.field.value)
+        self.textbox.setObjectName("textbox")
+        self.connect(self.textbox, QtCore.SIGNAL('editingFinished()'), self.set_value)
+        self.hbox.addWidget(self.textbox)
+        self.hbox.addWidget(self.activebox)
+
+        if not self.active:
+            self.set_active(self.active)
+
+    def apply_textbox_color(self):
+        color = QtGui.QColor(self.textbox.displayText())
+        self.color = color
+        self.update_color()
+
+    def set_value(self):
+        self.value = self.field.value = self.textbox.displayText()
+        self.emit(QtCore.SIGNAL('controlChanged()'))
+
+    def get_value(self):
+        return self.field.value
+    
+    def set_active(self, state):
+        self.active = self.field.active = bool(state)
+        self.activebox.setChecked(self.active)
+        self.label.setEnabled(self.active)
+        self.textbox.setEnabled(self.active)
+
 def create_control_from_field(field, parent=None, width=CONTROLWIDTH, height=CONTROLHEIGHT):
     '''Given a Field instance, an appropriate Control instance is returned.'''
     control = None
@@ -414,6 +448,8 @@ def create_control_from_field(field, parent=None, width=CONTROLWIDTH, height=CON
         control = NumberControl(field, parent, width=width, height=height)
     elif field.type == CHOICE:
         control = ChoiceControl(field, parent, width=width, height=height)
+    elif field.type == TEXT:
+        control = TextControl(field, parent, width=width, height=height)
     else:
         print 'Wrong field type: '
         print field.type

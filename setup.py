@@ -35,7 +35,7 @@ setup(name="batchcommander",
       license="GNU General Public License (GPL)",
       packages=['batchcommander'],
       data_files = datafiles,
-      scripts=["bin/bcommander.py"],
+      scripts=["bin/bcommander.py", "bin/bcommander-pattern.py"],
 #      windows=[{"script": "bin/batchcommander"}],
 #      options={"py2exe": {"skip_archive": True, "includes": ["sip"]}}
       )
